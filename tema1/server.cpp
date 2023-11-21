@@ -37,6 +37,7 @@ struct tokken create_token(int approved,
 	return new_token;
 }
 
+// TODO: get server output from here
 struct ser_response *
 request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
