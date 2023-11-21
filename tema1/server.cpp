@@ -5,16 +5,22 @@
  */
 
 #include "oauth.h"
+#include "helpers_server.h"
 
 struct tokken create_token() {
 	struct tokken new_token;
 	new_token.type = "Empty token";
 }
 
+
+// TODO:continue from here
 struct ser_response *
 request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
 	static struct ser_response  result;
+
+	std::cout << argp->client_id << std::endl;
+	std::cout << argp->tokken.type << std::endl;
 
 	/*
 	 * insert server code here

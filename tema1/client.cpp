@@ -14,14 +14,24 @@
 
 std::unordered_map<std::string, bool> user_refresh;
 
-void request_autorization_fun(CLIENT *clnt) {
+
+char *string_to_char(std::string str) {
+	char *cstr = (char *)calloc(str.length() + 1, sizeof(char));
+	strcpy(cstr, str.c_str());
+	return cstr;
+}
+
+
+// TODO:continue from here 
+void request_autorization_fun(CLIENT *clnt, std::string user_id) {
 	struct cl_request  request_autorization_1_arg;
 	struct ser_response  *result_1;
 
+	// Don't need to send a token for autorization
 	struct tokken empty_token;
 	empty_token.type = "";
 
-	request_autorization_1_arg.client_id = "1";
+	request_autorization_1_arg.client_id = string_to_char(user_id);
 	request_autorization_1_arg.tokken = empty_token;
 
 	result_1 = request_autorization_1(&request_autorization_1_arg, clnt);
@@ -89,7 +99,6 @@ void validate_delegated_action_fun(CLIENT *clnt) {
 void process_request_cmd(CLIENT *clnt, std::string client_id,
 							std::string auto_refresh) {
 
-	std::cout << "Request command\n";
 
 	// Does the current user have auto_refresh enabled?
 	if (auto_refresh == "1") {
@@ -98,7 +107,11 @@ void process_request_cmd(CLIENT *clnt, std::string client_id,
 		user_refresh[client_id] = false;
 	}
 
-	// O-Auth scheme
+	// TODO: O-Auth scheme
+
+	// Step1 : request autorization
+	request_autorization_fun(clnt, client_id);
+
 }
 
 void process_other_cmd(CLIENT *clnt, std::string client_id,
