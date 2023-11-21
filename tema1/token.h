@@ -12,7 +12,7 @@
  * OUTPUT: rotated string
  * */
 char* generate_access_token(char* clientIdToken) {
-    char *token = malloc(TOKEN_LEN * sizeof(char*));
+    char *token = (char *) malloc(TOKEN_LEN * sizeof(char*));
     int i, key, used[TOKEN_LEN];
     int rotationIndex = TOKEN_LEN;
 

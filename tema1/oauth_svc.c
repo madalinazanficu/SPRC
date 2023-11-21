@@ -11,6 +11,7 @@
 #include <memory.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include "helpers_server.h"
 
 #ifndef SIG_PF
 #define SIG_PF void(*)(int)
@@ -81,6 +82,8 @@ oauth_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 int
 main (int argc, char **argv)
 {
+	command_line_arguments_support(argc, argv);
+
 	register SVCXPRT *transp;
 
 	pmap_unset (OAUTH_PROG, OAUTH_VERS);

@@ -6,12 +6,19 @@
 
 #include "oauth.h"
 #include "helpers_server.h"
+#include "token.h"
 
 struct tokken create_token() {
 	struct tokken new_token;
 	new_token.type = "Empty token";
+	return new_token;
 }
 
+char *string_to_char(std::string str) {
+	char *cstr = (char *)calloc(str.length() + 1, sizeof(char));
+	strcpy(cstr, str.c_str());
+	return cstr;
+}
 
 // TODO:continue from here
 struct ser_response *
@@ -19,16 +26,20 @@ request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
 	static struct ser_response  result;
 
-	std::cout << argp->client_id << std::endl;
-	std::cout << argp->tokken.type << std::endl;
-
-	/*
-	 * insert server code here
-	 */
-	result.message = "Message";
+	// Generate default tokens
 	result.auto_token = create_token();
 	result.access_token = create_token();
 	result.refresh_token = create_token();
+
+	std::string user_id = argp->client_id;
+	if (users.find(user_id) == users.end()) {
+		result.message =  "USER_NOT_FOUND";
+		return &result;
+	}
+	
+	char *auto_token = generate_access_token(string_to_char(user_id));
+	result.auto_token.type = strdup(auto_token);
+	result.message = "USER_FOUND";
 
 	return &result;
 }

@@ -38,8 +38,8 @@ void request_autorization_fun(CLIENT *clnt, std::string user_id) {
 	if (result_1 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
-
-	printf("Result 1: %s\n", result_1->access_token.type);
+	printf("Result 1: %s\n", result_1->auto_token.type);
+	printf("Result 1: %s\n", result_1->message);
 }
 
 void request_user_approvall(CLIENT *clnt) {
