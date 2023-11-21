@@ -93,7 +93,7 @@ void process_other_cmd(CLIENT *clnt, std::string client_id,
 int main (int argc, char *argv[])
 {
 	char *host;
-	if (argc < 2) {
+	if (argc < 3) {
 		printf ("usage: %s server_host\n", argv[0]);
 		exit (1);
 	}
@@ -105,9 +105,12 @@ int main (int argc, char *argv[])
 		exit (1);
 	}
 
+	char *client_file;
+	client_file = argv[2];
+
 	// Read from client file
 	// TODO: ce fac cu campul auto_refresh?
-	std::ifstream clients("tests/tests/test1/client.in");
+	std::ifstream clients(client_file);
 	std::string command;
 	while(std::getline(clients, command)) {
 		std::stringstream ss(command);
