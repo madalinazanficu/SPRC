@@ -5,6 +5,11 @@
  */
 
 #include "oauth.h"
+#include<string>
+#include<iostream>
+#include<fstream>
+#include<sstream>
+#include<vector>
 #include "helpers.h"
 
 void request_autorization_fun(CLIENT *clnt) {

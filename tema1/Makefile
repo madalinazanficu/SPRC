@@ -21,4 +21,4 @@ run-client:
 	./client localhost /home/madalina/SPRC/tema1/tests/tests/test1/client.in
 
 run-server:
-	./server /home/madalina/SPRC/tema1/tests/tests/test1/usersIDs.db /home/madalina/SPRC/tema1/tests/tests/test1/resources.db /home/madalina/SPRC/tema1/tests/tests/test1/approvals.db
+	./server /home/madalina/SPRC/tema1/tests/tests/test1/userIDs.db /home/madalina/SPRC/tema1/tests/tests/test1/resources.db /home/madalina/SPRC/tema1/tests/tests/test1/approvals.db
