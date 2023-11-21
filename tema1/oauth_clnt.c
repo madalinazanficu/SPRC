@@ -9,60 +9,60 @@
 /* Default timeout can be changed using clnt_control() */
 static struct timeval TIMEOUT = { 25, 0 };
 
-struct response *
-request_autorization_1(struct request *argp, CLIENT *clnt)
+struct ser_response *
+request_autorization_1(struct cl_request *argp, CLIENT *clnt)
 {
-	static struct response clnt_res;
+	static struct ser_response clnt_res;
 
 	memset((char *)&clnt_res, 0, sizeof(clnt_res));
 	if (clnt_call (clnt, request_autorization,
-		(xdrproc_t) xdr_request, (caddr_t) argp,
-		(xdrproc_t) xdr_response, (caddr_t) &clnt_res,
+		(xdrproc_t) xdr_cl_request, (caddr_t) argp,
+		(xdrproc_t) xdr_ser_response, (caddr_t) &clnt_res,
 		TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}
 	return (&clnt_res);
 }
 
-struct response *
-request_approve_1(struct request *argp, CLIENT *clnt)
+struct ser_response *
+request_approve_1(struct cl_request *argp, CLIENT *clnt)
 {
-	static struct response clnt_res;
+	static struct ser_response clnt_res;
 
 	memset((char *)&clnt_res, 0, sizeof(clnt_res));
 	if (clnt_call (clnt, request_approve,
-		(xdrproc_t) xdr_request, (caddr_t) argp,
-		(xdrproc_t) xdr_response, (caddr_t) &clnt_res,
+		(xdrproc_t) xdr_cl_request, (caddr_t) argp,
+		(xdrproc_t) xdr_ser_response, (caddr_t) &clnt_res,
 		TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}
 	return (&clnt_res);
 }
 
-struct response *
-request_access_token_1(struct request *argp, CLIENT *clnt)
+struct ser_response *
+request_access_token_1(struct cl_request *argp, CLIENT *clnt)
 {
-	static struct response clnt_res;
+	static struct ser_response clnt_res;
 
 	memset((char *)&clnt_res, 0, sizeof(clnt_res));
 	if (clnt_call (clnt, request_access_token,
-		(xdrproc_t) xdr_request, (caddr_t) argp,
-		(xdrproc_t) xdr_response, (caddr_t) &clnt_res,
+		(xdrproc_t) xdr_cl_request, (caddr_t) argp,
+		(xdrproc_t) xdr_ser_response, (caddr_t) &clnt_res,
 		TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}
 	return (&clnt_res);
 }
 
-struct response *
-validate_delegated_action_1(struct request *argp, CLIENT *clnt)
+struct ser_response *
+validate_delegated_action_1(struct cl_request *argp, CLIENT *clnt)
 {
-	static struct response clnt_res;
+	static struct ser_response clnt_res;
 
 	memset((char *)&clnt_res, 0, sizeof(clnt_res));
 	if (clnt_call (clnt, validate_delegated_action,
-		(xdrproc_t) xdr_request, (caddr_t) argp,
-		(xdrproc_t) xdr_response, (caddr_t) &clnt_res,
+		(xdrproc_t) xdr_cl_request, (caddr_t) argp,
+		(xdrproc_t) xdr_ser_response, (caddr_t) &clnt_res,
 		TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}

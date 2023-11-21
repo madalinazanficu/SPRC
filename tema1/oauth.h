@@ -14,70 +14,70 @@ extern "C" {
 #endif
 
 
-struct token {
+struct tokken {
 	char *type;
 };
-typedef struct token token;
+typedef struct tokken tokken;
 
-struct request {
+struct cl_request {
 	char *client_id;
-	struct token token;
+	struct tokken tokken;
 };
-typedef struct request request;
+typedef struct cl_request cl_request;
 
-struct response {
+struct ser_response {
 	char *message;
-	struct token auto_token;
-	struct token access_token;
-	struct token refresh_token;
+	struct tokken auto_token;
+	struct tokken access_token;
+	struct tokken refresh_token;
 };
-typedef struct response response;
+typedef struct ser_response ser_response;
 
 #define OAUTH_PROG 0x33445566
 #define OAUTH_VERS 1
 
 #if defined(__STDC__) || defined(__cplusplus)
 #define request_autorization 1
-extern  struct response * request_autorization_1(struct request *, CLIENT *);
-extern  struct response * request_autorization_1_svc(struct request *, struct svc_req *);
+extern  struct ser_response * request_autorization_1(struct cl_request *, CLIENT *);
+extern  struct ser_response * request_autorization_1_svc(struct cl_request *, struct svc_req *);
 #define request_approve 2
-extern  struct response * request_approve_1(struct request *, CLIENT *);
-extern  struct response * request_approve_1_svc(struct request *, struct svc_req *);
+extern  struct ser_response * request_approve_1(struct cl_request *, CLIENT *);
+extern  struct ser_response * request_approve_1_svc(struct cl_request *, struct svc_req *);
 #define request_access_token 3
-extern  struct response * request_access_token_1(struct request *, CLIENT *);
-extern  struct response * request_access_token_1_svc(struct request *, struct svc_req *);
+extern  struct ser_response * request_access_token_1(struct cl_request *, CLIENT *);
+extern  struct ser_response * request_access_token_1_svc(struct cl_request *, struct svc_req *);
 #define validate_delegated_action 4
-extern  struct response * validate_delegated_action_1(struct request *, CLIENT *);
-extern  struct response * validate_delegated_action_1_svc(struct request *, struct svc_req *);
+extern  struct ser_response * validate_delegated_action_1(struct cl_request *, CLIENT *);
+extern  struct ser_response * validate_delegated_action_1_svc(struct cl_request *, struct svc_req *);
 extern int oauth_prog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
 #define request_autorization 1
-extern  struct response * request_autorization_1();
-extern  struct response * request_autorization_1_svc();
+extern  struct ser_response * request_autorization_1();
+extern  struct ser_response * request_autorization_1_svc();
 #define request_approve 2
-extern  struct response * request_approve_1();
-extern  struct response * request_approve_1_svc();
+extern  struct ser_response * request_approve_1();
+extern  struct ser_response * request_approve_1_svc();
 #define request_access_token 3
-extern  struct response * request_access_token_1();
-extern  struct response * request_access_token_1_svc();
+extern  struct ser_response * request_access_token_1();
+extern  struct ser_response * request_access_token_1_svc();
 #define validate_delegated_action 4
-extern  struct response * validate_delegated_action_1();
-extern  struct response * validate_delegated_action_1_svc();
+extern  struct ser_response * validate_delegated_action_1();
+extern  struct ser_response * validate_delegated_action_1_svc();
 extern int oauth_prog_1_freeresult ();
 #endif /* K&R C */
 
 /* the xdr functions */
 
 #if defined(__STDC__) || defined(__cplusplus)
-extern  bool_t xdr_token (XDR *, token*);
-extern  bool_t xdr_request (XDR *, request*);
-extern  bool_t xdr_response (XDR *, response*);
+extern  bool_t xdr_tokken (XDR *, tokken*);
+extern  bool_t xdr_cl_request (XDR *, cl_request*);
+extern  bool_t xdr_ser_response (XDR *, ser_response*);
 
 #else /* K&R C */
-extern bool_t xdr_token ();
-extern bool_t xdr_request ();
-extern bool_t xdr_response ();
+extern bool_t xdr_tokken ();
+extern bool_t xdr_cl_request ();
+extern bool_t xdr_ser_response ();
 
 #endif /* K&R C */
 

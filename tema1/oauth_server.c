@@ -6,11 +6,6 @@
 
 #include "oauth.h"
 
-struct tokken create_token() {
-	struct tokken new_token;
-	new_token.type = "Empty token";
-}
-
 struct ser_response *
 request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
@@ -19,10 +14,6 @@ request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	/*
 	 * insert server code here
 	 */
-	result.message = "Message";
-	result.auto_token = create_token();
-	result.access_token = create_token();
-	result.refresh_token = create_token();
 
 	return &result;
 }
@@ -36,11 +27,6 @@ request_approve_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	 * insert server code here
 	 */
 
-	result.message = "Message";
-	result.auto_token = create_token();
-	result.access_token = create_token();
-	result.refresh_token = create_token();
-
 	return &result;
 }
 
@@ -53,11 +39,6 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	 * insert server code here
 	 */
 
-	result.message = "Message";
-	result.auto_token = create_token();
-	result.access_token = create_token();
-	result.refresh_token = create_token();
-
 	return &result;
 }
 
@@ -69,11 +50,6 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	/*
 	 * insert server code here
 	 */
-
-	result.message = "Message";
-	result.auto_token = create_token();
-	result.access_token = create_token();
-	result.refresh_token = create_token();
 
 	return &result;
 }

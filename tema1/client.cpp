@@ -10,20 +10,22 @@
 #include<fstream>
 #include<sstream>
 #include<vector>
-#include "helpers.h"
+#include "helpers_client.h"
+
+std::unordered_map<std::string, bool> user_refresh;
 
 void request_autorization_fun(CLIENT *clnt) {
-	struct request  request_autorization_1_arg;
-	struct response  *result_1;
+	struct cl_request  request_autorization_1_arg;
+	struct ser_response  *result_1;
 
-	struct token empty_token;
+	struct tokken empty_token;
 	empty_token.type = "";
 
 	request_autorization_1_arg.client_id = "1";
-	request_autorization_1_arg.token = empty_token;
+	request_autorization_1_arg.tokken = empty_token;
 
 	result_1 = request_autorization_1(&request_autorization_1_arg, clnt);
-	if (result_1 == (struct response *) NULL) {
+	if (result_1 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
 
@@ -31,17 +33,17 @@ void request_autorization_fun(CLIENT *clnt) {
 }
 
 void request_user_approvall(CLIENT *clnt) {
-	struct response  *result_2;
-	struct request  request_approve_1_arg;
+	struct ser_response  *result_2;
+	struct cl_request  request_approve_1_arg;
 
-	struct token empty_token;
+	struct tokken empty_token;
 	empty_token.type = "";
 
 	request_approve_1_arg.client_id = "2";
-	request_approve_1_arg.token = empty_token;
+	request_approve_1_arg.tokken = empty_token;
 
 	result_2 = request_approve_1(&request_approve_1_arg, clnt);
-	if (result_2 == (struct response *) NULL) {
+	if (result_2 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
 
@@ -49,17 +51,17 @@ void request_user_approvall(CLIENT *clnt) {
 }
 
 void request_access(CLIENT *clnt) {
-	struct response  *result_3;
-	struct request  request_access_token_1_arg;
+	struct ser_response  *result_3;
+	struct cl_request  request_access_token_1_arg;
 
-	struct token empty_token;
+	struct tokken empty_token;
 	empty_token.type = "";
 
 	request_access_token_1_arg.client_id = "3";
-	request_access_token_1_arg.token = empty_token;
+	request_access_token_1_arg.tokken = empty_token;
 
 	result_3 = request_access_token_1(&request_access_token_1_arg, clnt);
-	if (result_3 == (struct response *) NULL) {
+	if (result_3 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
 
@@ -67,25 +69,36 @@ void request_access(CLIENT *clnt) {
 }
 
 void validate_delegated_action_fun(CLIENT *clnt) {
-	struct response  *result_4;
-	struct request  validate_delegated_action_1_arg;
+	struct ser_response  *result_4;
+	struct cl_request  validate_delegated_action_1_arg;
 
-	struct token empty_token;
+	struct tokken empty_token;
 	empty_token.type = "";
 
 	validate_delegated_action_1_arg.client_id = "4";
-	validate_delegated_action_1_arg.token = empty_token;
+	validate_delegated_action_1_arg.tokken = empty_token;
 
 	result_4 = validate_delegated_action_1(&validate_delegated_action_1_arg, clnt);
-	if (result_4 == (struct response *) NULL) {
+	if (result_4 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
 
 	printf("Result 4: %s\n", result_4->access_token.type);
 }
 
-void process_request_cmd(CLIENT *clnt, std::string client_id, std::string auto_refresh) {
+void process_request_cmd(CLIENT *clnt, std::string client_id,
+							std::string auto_refresh) {
+
 	std::cout << "Request command\n";
+
+	// Does the current user have auto_refresh enabled?
+	if (auto_refresh == "1") {
+		user_refresh[client_id] = true;
+	} else {
+		user_refresh[client_id] = false;
+	}
+
+	// O-Auth scheme
 }
 
 void process_other_cmd(CLIENT *clnt, std::string client_id,
@@ -114,7 +127,6 @@ int main (int argc, char *argv[])
 	client_file = argv[2];
 
 	// Read from client file
-	// TODO: ce fac cu campul auto_refresh?
 	std::ifstream clients(client_file);
 	std::string command;
 	while(std::getline(clients, command)) {
@@ -135,10 +147,10 @@ int main (int argc, char *argv[])
 
 
 	// O-Auth scheme
-	request_autorization_fun(clnt);
-	request_access(clnt);
-	request_access(clnt);
-	validate_delegated_action_fun(clnt);
+	// request_autorization_fun(clnt);
+	// request_access(clnt);
+	// request_access(clnt);
+	// validate_delegated_action_fun(clnt);
 
 	clnt_destroy (clnt);
 	exit (0);

@@ -1,8 +1,8 @@
 CFLAGS = -g -I/usr/include/tirpc
 
 build:
-	g++ -o client client.cpp helpers.cpp oauth_clnt.c oauth_xdr.c -lnsl -ltirpc $(CFLAGS)
-	g++ -o server server.cpp helpers.cpp oauth_svc.c oauth_xdr.c -lnsl -ltirpc $(CFLAGS)
+	g++ -o client client.cpp helpers_client.cpp oauth_clnt.c oauth_xdr.c -lnsl -ltirpc $(CFLAGS)
+	g++ -o server server.cpp helpers_server.cpp oauth_svc.c oauth_xdr.c -lnsl -ltirpc $(CFLAGS)
 
 rpc-gen:
 	rpcgen -aC oauth.x

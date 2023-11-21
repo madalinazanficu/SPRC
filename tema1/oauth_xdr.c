@@ -6,7 +6,7 @@
 #include "oauth.h"
 
 bool_t
-xdr_token (XDR *xdrs, token *objp)
+xdr_tokken (XDR *xdrs, tokken *objp)
 {
 	register int32_t *buf;
 
@@ -16,29 +16,29 @@ xdr_token (XDR *xdrs, token *objp)
 }
 
 bool_t
-xdr_request (XDR *xdrs, request *objp)
+xdr_cl_request (XDR *xdrs, cl_request *objp)
 {
 	register int32_t *buf;
 
 	 if (!xdr_string (xdrs, &objp->client_id, ~0))
 		 return FALSE;
-	 if (!xdr_token (xdrs, &objp->token))
+	 if (!xdr_tokken (xdrs, &objp->tokken))
 		 return FALSE;
 	return TRUE;
 }
 
 bool_t
-xdr_response (XDR *xdrs, response *objp)
+xdr_ser_response (XDR *xdrs, ser_response *objp)
 {
 	register int32_t *buf;
 
 	 if (!xdr_string (xdrs, &objp->message, ~0))
 		 return FALSE;
-	 if (!xdr_token (xdrs, &objp->auto_token))
+	 if (!xdr_tokken (xdrs, &objp->auto_token))
 		 return FALSE;
-	 if (!xdr_token (xdrs, &objp->access_token))
+	 if (!xdr_tokken (xdrs, &objp->access_token))
 		 return FALSE;
-	 if (!xdr_token (xdrs, &objp->refresh_token))
+	 if (!xdr_tokken (xdrs, &objp->refresh_token))
 		 return FALSE;
 	return TRUE;
 }
