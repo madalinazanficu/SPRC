@@ -30,8 +30,8 @@ struct tokken create_empty_token() {
 }
 
 
-// TODO:continue from here 
-void request_autorization_fun(CLIENT *clnt, std::string user_id) {
+// TODO: get client output from here
+struct tokken request_autorization_fun(CLIENT *clnt, std::string user_id) {
 	struct cl_request  request_autorization_1_arg;
 	struct ser_response  *result_1;
 
@@ -42,24 +42,29 @@ void request_autorization_fun(CLIENT *clnt, std::string user_id) {
 	if (result_1 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
+
+	printf("Result 1: %s\n", result_1->message);
+	printf("Result 1: %s\n", result_1->auto_token.type);
+	printf("Result 1: %s\n", result_1->auto_token.value);
+	printf("Result 1: %d\n", result_1->auto_token.approved);
+
+	return result_1->auto_token;
 }
 
-void request_user_approvall(CLIENT *clnt) {
+// TODO:continue implementation from here 
+void request_user_approvall(CLIENT *clnt, std::string user_id,
+								struct tokken auto_token) {
+
 	struct ser_response  *result_2;
 	struct cl_request  request_approve_1_arg;
 
-	struct tokken empty_token;
-	empty_token.type = "";
-
-	request_approve_1_arg.client_id = "2";
-	request_approve_1_arg.tokken = empty_token;
+	request_approve_1_arg.client_id = string_to_char(user_id);
+	request_approve_1_arg.tokken = create_empty_token();
 
 	result_2 = request_approve_1(&request_approve_1_arg, clnt);
 	if (result_2 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
-
-	printf("Result 2: %s\n", result_2->access_token.type);
 }
 
 void request_access(CLIENT *clnt) {
@@ -112,7 +117,10 @@ void process_request_cmd(CLIENT *clnt, std::string client_id,
 	// TODO: O-Auth scheme
 
 	// Step1 : request autorization
-	request_autorization_fun(clnt, client_id);
+	struct tokken auto_token = request_autorization_fun(clnt, client_id);
+
+	// Step2 : request user approval
+	request_user_approvall(clnt, client_id, auto_token);
 
 }
 
