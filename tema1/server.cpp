@@ -8,16 +8,34 @@
 #include "helpers_server.h"
 #include "token.h"
 
-struct tokken create_token() {
-	struct tokken new_token;
-	new_token.type = "Empty token";
-	return new_token;
-}
 
 char *string_to_char(std::string str) {
 	char *cstr = (char *)calloc(str.length() + 1, sizeof(char));
 	strcpy(cstr, str.c_str());
 	return cstr;
+}
+
+struct tokken create_empty_token() {
+	struct tokken new_token;
+	new_token.approved = 0;
+	new_token.type = "Empty token";
+	new_token.value = "";
+	return new_token;
+}
+
+struct tokken create_token(int approved,
+							std::string type,
+							std::string initial_value) {
+
+	struct tokken new_token;
+
+	char *token_value = generate_access_token(string_to_char(initial_value));
+
+	new_token.approved = approved;
+	new_token.type = string_to_char(type);
+	new_token.value = strdup(token_value);
+
+	return new_token;
 }
 
 // TODO:continue from here
@@ -27,18 +45,18 @@ request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	static struct ser_response  result;
 
 	// Generate default tokens
-	result.auto_token = create_token();
-	result.access_token = create_token();
-	result.refresh_token = create_token();
+	result.auto_token = create_empty_token();
+	result.access_token = create_empty_token();
+	result.refresh_token = create_empty_token();
 
+	// Search the user in the database
 	std::string user_id = argp->client_id;
 	if (users.find(user_id) == users.end()) {
 		result.message =  "USER_NOT_FOUND";
 		return &result;
 	}
 	
-	char *auto_token = generate_access_token(string_to_char(user_id));
-	result.auto_token.type = strdup(auto_token);
+	result.auto_token = create_token(0, "auto_token", user_id);
 	result.message = "USER_FOUND";
 
 	return &result;
@@ -54,9 +72,9 @@ request_approve_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	 */
 
 	result.message = "Message";
-	result.auto_token = create_token();
-	result.access_token = create_token();
-	result.refresh_token = create_token();
+	result.auto_token = create_empty_token();
+	result.access_token = create_empty_token();
+	result.refresh_token = create_empty_token();
 
 	return &result;
 }
@@ -71,9 +89,9 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	 */
 
 	result.message = "Message";
-	result.auto_token = create_token();
-	result.access_token = create_token();
-	result.refresh_token = create_token();
+	result.auto_token = create_empty_token();
+	result.access_token = create_empty_token();
+	result.refresh_token = create_empty_token();
 
 	return &result;
 }
@@ -88,9 +106,9 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	 */
 
 	result.message = "Message";
-	result.auto_token = create_token();
-	result.access_token = create_token();
-	result.refresh_token = create_token();
+	result.auto_token = create_empty_token();
+	result.access_token = create_empty_token();
+	result.refresh_token = create_empty_token();
 
 	return &result;
 }

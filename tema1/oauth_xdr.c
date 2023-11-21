@@ -10,7 +10,11 @@ xdr_tokken (XDR *xdrs, tokken *objp)
 {
 	register int32_t *buf;
 
+	 if (!xdr_int (xdrs, &objp->approved))
+		 return FALSE;
 	 if (!xdr_string (xdrs, &objp->type, ~0))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->value, ~0))
 		 return FALSE;
 	return TRUE;
 }

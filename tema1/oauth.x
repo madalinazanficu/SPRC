@@ -1,5 +1,7 @@
 struct tokken {
+    int approved;
     string type<>;
+    string value<>;
 };
 
 struct cl_request {

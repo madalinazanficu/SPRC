@@ -21,24 +21,30 @@ char *string_to_char(std::string str) {
 	return cstr;
 }
 
+struct tokken create_empty_token() {
+	struct tokken new_token;
+	new_token.approved = 0;
+	new_token.type = "Empty token";
+	new_token.value = "";
+	return new_token;
+}
+
 
 // TODO:continue from here 
 void request_autorization_fun(CLIENT *clnt, std::string user_id) {
 	struct cl_request  request_autorization_1_arg;
 	struct ser_response  *result_1;
 
-	// Don't need to send a token for autorization
-	struct tokken empty_token;
-	empty_token.type = "";
-
 	request_autorization_1_arg.client_id = string_to_char(user_id);
-	request_autorization_1_arg.tokken = empty_token;
+	request_autorization_1_arg.tokken = create_empty_token();
 
 	result_1 = request_autorization_1(&request_autorization_1_arg, clnt);
 	if (result_1 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
+	printf("Result 1: %d\n", result_1->auto_token.approved);
 	printf("Result 1: %s\n", result_1->auto_token.type);
+	printf("Result 1: %s\n", result_1->auto_token.value);
 	printf("Result 1: %s\n", result_1->message);
 }
 
