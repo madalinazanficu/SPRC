@@ -3,7 +3,30 @@
 std::unordered_map<std::string, bool> users;
 std::unordered_map<std::string, bool> resources;
 std::vector<std::string> approvals;
+std::unordered_map<std::string, std::unordered_map<std::string, std::string>> token_perm;
 
+/*
+    Parse each apprval line from usersApproval.db.
+    Split each line by ',' and iterate 2 by 2 words to interpret the permissions.
+*/
+std::unordered_map<std::string, std::string> parse_permissions(int index) {
+    std::unordered_map<std::string, std::string> permissions;
+
+    std::string line = approvals[index];
+    std::stringstream ss(line);
+
+    std::vector<std::string> parts;
+    while (ss.good()) {
+        std::string substr;
+        std::getline(ss, substr, ',');
+        parts.push_back(substr);
+    }
+
+    for (int i = 0; i < parts.size(); i += 2) {
+        permissions[parts[i]] = parts[i + 1];
+    }
+    return permissions;
+}
 
 void read_users_db(char *users_db_file) {
     std::ifstream users_db(users_db_file);
@@ -72,4 +95,17 @@ void command_line_arguments_support(int argc, char *argv[]) {
     read_users_db(users_db_file);
     read_resources_db(resources_db_file);
     read_approvals(users_approval_db_file);
+
+    // TODO: delete, only for testing
+    for (int i = 0; i < approvals.size(); i++) {
+        std::cout << "Approval: \n";
+        std::unordered_map<std::string, std::string> map = parse_permissions(i);
+    
+        for (auto it = map.begin(); it != map.end(); it++) {
+            std::cout << it->first << " " << it->second << std::endl;
+        }
+        std::cout << std::endl;
+    
+    }
+    
 }

@@ -8,7 +8,6 @@
 #include "helpers_server.h"
 #include "token.h"
 
-
 char *string_to_char(std::string str) {
 	char *cstr = (char *)calloc(str.length() + 1, sizeof(char));
 	strcpy(cstr, str.c_str());
@@ -38,7 +37,6 @@ struct tokken create_token(int approved,
 	return new_token;
 }
 
-// TODO:continue from here
 struct ser_response *
 request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
@@ -62,19 +60,18 @@ request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	return &result;
 }
 
+// TODO:continue from here
 struct ser_response *
 request_approve_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
 	static struct ser_response  result;
 
-	/*
-	 * insert server code here
-	 */
-
 	result.message = "Message";
 	result.auto_token = create_empty_token();
 	result.access_token = create_empty_token();
 	result.refresh_token = create_empty_token();
+
+
 
 	return &result;
 }

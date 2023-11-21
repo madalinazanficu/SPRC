@@ -19,11 +19,21 @@ extern std::unordered_map<std::string, bool> resources;
 // Users approval responses read from usersApproval.db
 extern std::vector<std::string> approvals;
 
+
+// Each token will have a list of permissions
+/* 
+    ex: token1 --> resource1 --> RM 
+               --> resource2 --> RIMD
+*/
+extern std::unordered_map<std::string, std::unordered_map<std::string, std::string>> token_perm;
+
 // Server pre-configuration functions
 void command_line_arguments_support(int argc, char *argv[]);
 void read_users_db(char *users_db_file);
 void read_resources_db(char *resources_db_file);
 void read_approvals(char *users_approval_responses);
+
+std::unordered_map<std::string, std::string> parse_permissions(int index);
 
 
 #endif // HELPERS_SERVER_H
