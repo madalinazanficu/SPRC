@@ -42,6 +42,8 @@ extern int user_index;
 // Token availability is passed as a command line argument
 extern int token_availability;
 
+extern std::ofstream out_server;
+
 // Server pre-configuration functions
 void command_line_arguments_support(int argc, char *argv[]);
 void read_users_db(char *users_db_file);

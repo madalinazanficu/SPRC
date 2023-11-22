@@ -13,6 +13,7 @@
 #include "helpers_client.h"
 
 std::unordered_map<std::string, bool> user_refresh;
+std::ofstream out_client;
 
 
 char *string_to_char(std::string str) {
@@ -46,6 +47,7 @@ std::string request_autorization_fun(CLIENT *clnt, std::string user_id, struct t
 	}
 
 	auto_token = result_1->auto_token;
+
 	return result_1->message;
 }
 
@@ -89,11 +91,16 @@ void request_access(CLIENT *clnt, std::string user_id,
 		clnt_perror (clnt, "call failed");
 	}
 
-	printf("Result: %s\n", result_3->message);
-	printf("Access token: %s\n", result_3->access_token.value);
-	printf("Refresh token: %s\n", result_3->refresh_token.value);
-	printf("TTL token: %d\n", result_3->access_token.ttl);
-	printf("\n");
+	if (std::string(result_3->message) == "REQUEST_DENIED") {
+		out_client << result_3->message << std::endl;
+		return;
+	}
+
+	std::string out_val = result_3->auto_token.value + std::string(" -> ") + result_3->access_token.value;
+	if (std::string(result_3->refresh_token.value) != "") {
+		out_val += " , " + std::string(result_3->refresh_token.value);
+	}
+	out_client << out_val << std::endl;
 }
 
 void validate_delegated_action_fun(CLIENT *clnt) {
@@ -131,7 +138,7 @@ void process_request_cmd(CLIENT *clnt, std::string client_id,
 
 	std::string message = request_autorization_fun(clnt, client_id, auto_token);
 	if (message == "USER_NOT_FOUND") {
-		std::cout << "USER_NOT_FOUND" << std::endl;
+		out_client << "USER_NOT_FOUND" << std::endl;
 		return;
 	}
 
@@ -165,6 +172,8 @@ int main (int argc, char *argv[])
 		exit (1);
 	}
 
+	out_client.open("out_client.txt");
+
 	char *client_file;
 	client_file = argv[2];
 
@@ -194,6 +203,7 @@ int main (int argc, char *argv[])
 	// request_access(clnt);
 	// validate_delegated_action_fun(clnt);
 
+	out_client.close();
 	clnt_destroy (clnt);
 	exit (0);
 }

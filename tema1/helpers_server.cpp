@@ -7,6 +7,7 @@ std::unordered_map<std::string, std::unordered_map<std::string, std::string>> to
 std::unordered_map<std::string, std::string> user_access_token;
 int user_index = 0;
 int token_availability;
+std::ofstream out_server;
 
 /*
     Parse each apprval line from usersApproval.db.

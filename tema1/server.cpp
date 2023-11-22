@@ -18,7 +18,7 @@ struct tokken create_empty_token() {
 	struct tokken new_token;
 	new_token.approved = 0;
 	new_token.type = "Empty token";
-	new_token.value = "empty";
+	new_token.value = "";
 	new_token.ttl = 0;
 	return new_token;
 }
@@ -45,6 +45,7 @@ struct ser_response *
 request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
 	static struct ser_response  result;
+	out_server << "BEGIN " << argp->client_id << " AUTHZ" << std::endl;
 
 	// Default tokens
 	result.auto_token = create_empty_token();
@@ -60,6 +61,9 @@ request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	
 	result.auto_token = create_token(0, "auto_token", user_id, 0);
 	result.message = "USER_FOUND";
+
+
+	out_server << "  RequestToken = " << result.auto_token.value << std::endl;
 
 	return &result;
 }
@@ -113,9 +117,11 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 
 	// Generate access and refresh tokens
 	result.access_token = create_token(0, "access_token", argp->tokken.value, token_availability);
-	
-	if (argp->info == "REFRESH") {
+	out_server << "  AccessToken = " << result.access_token.value << std::endl;
+
+	if (std::string(argp->info) == "REFRESH") {
 		result.refresh_token = create_token(0, "refresh_token", result.access_token.value, token_availability);
+		out_server << "  RefreshToken = " << result.refresh_token.value << std::endl;
 	} else {
 		result.refresh_token = create_empty_token();
 	}

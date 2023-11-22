@@ -83,6 +83,7 @@ int
 main (int argc, char **argv)
 {
 	command_line_arguments_support(argc, argv);
+	out_server.open("out_server.txt");
 
 	register SVCXPRT *transp;
 
@@ -110,6 +111,8 @@ main (int argc, char **argv)
 
 	svc_run ();
 	fprintf (stderr, "%s", "svc_run returned");
+
+	out_server.close();
 	exit (1);
 	/* NOTREACHED */
 }
