@@ -6,6 +6,7 @@ std::vector<std::string> approvals;
 std::unordered_map<std::string, std::unordered_map<std::string, std::string>> token_perm;
 std::unordered_map<std::string, std::string> user_access_token;
 int user_index = 0;
+int token_availability;
 
 /*
     Parse each apprval line from usersApproval.db.
@@ -88,7 +89,7 @@ void read_approvals(char *users_approval_responses) {
 }
 
 void command_line_arguments_support(int argc, char *argv[]) {
-    if (argc < 4) {
+    if (argc < 5) {
         std::cout << "Try to run again with more arguments" << std::endl;
         return;
     }
@@ -96,9 +97,11 @@ void command_line_arguments_support(int argc, char *argv[]) {
     char *users_db_file = argv[1];
     char *resources_db_file = argv[2];
     char *users_approval_db_file = argv[3];
+    char *token_av = argv[4];
 
     read_users_db(users_db_file);
     read_resources_db(resources_db_file);
     read_approvals(users_approval_db_file);
+    token_availability = atoi(token_av);
     
 }

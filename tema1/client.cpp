@@ -92,6 +92,7 @@ void request_access(CLIENT *clnt, std::string user_id,
 	printf("Result: %s\n", result_3->message);
 	printf("Access token: %s\n", result_3->access_token.value);
 	printf("Refresh token: %s\n", result_3->refresh_token.value);
+	printf("TTL token: %d\n", result_3->access_token.ttl);
 	printf("\n");
 }
 

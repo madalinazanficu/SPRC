@@ -25,7 +25,8 @@ struct tokken create_empty_token() {
 
 struct tokken create_token(int approved,
 							std::string type,
-							std::string initial_value) {
+							std::string initial_value,
+							int ttl = 0) {
 
 	struct tokken new_token;
 
@@ -34,6 +35,7 @@ struct tokken create_token(int approved,
 	new_token.approved = approved;
 	new_token.type = string_to_char(type);
 	new_token.value = strdup(token_value);
+	new_token.ttl = ttl;
 
 	return new_token;
 }
@@ -56,7 +58,7 @@ request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 		return &result;
 	}
 	
-	result.auto_token = create_token(0, "auto_token", user_id);
+	result.auto_token = create_token(0, "auto_token", user_id, 0);
 	result.message = "USER_FOUND";
 
 	return &result;
@@ -110,10 +112,10 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	}
 
 	// Generate access and refresh tokens
-	result.access_token = create_token(0, "access_token", argp->tokken.value);
+	result.access_token = create_token(0, "access_token", argp->tokken.value, token_availability);
 	
 	if (argp->info == "REFRESH") {
-		result.refresh_token = create_token(0, "refresh_token", result.access_token.value);
+		result.refresh_token = create_token(0, "refresh_token", result.access_token.value, token_availability);
 	} else {
 		result.refresh_token = create_empty_token();
 	}

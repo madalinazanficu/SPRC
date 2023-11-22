@@ -39,6 +39,9 @@ extern std::unordered_map<std::string, std::string> user_access_token;
 // Permission are grated to users in FIFO order
 extern int user_index;
 
+// Token availability is passed as a command line argument
+extern int token_availability;
+
 // Server pre-configuration functions
 void command_line_arguments_support(int argc, char *argv[]);
 void read_users_db(char *users_db_file);
