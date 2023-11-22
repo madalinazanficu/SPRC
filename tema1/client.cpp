@@ -26,58 +26,73 @@ struct tokken create_empty_token() {
 	new_token.approved = 0;
 	new_token.type = "Empty token";
 	new_token.value = "";
+	new_token.ttl = 0;
 	return new_token;
 }
 
 
 // TODO: get client output from here
-struct tokken request_autorization_fun(CLIENT *clnt, std::string user_id) {
+std::string request_autorization_fun(CLIENT *clnt, std::string user_id, struct tokken &auto_token) {
 	struct cl_request  request_autorization_1_arg;
 	struct ser_response  *result_1;
 
 	request_autorization_1_arg.client_id = string_to_char(user_id);
 	request_autorization_1_arg.tokken = create_empty_token();
+	request_autorization_1_arg.info = string_to_char("");
 
 	result_1 = request_autorization_1(&request_autorization_1_arg, clnt);
 	if (result_1 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
 
-	return result_1->auto_token;
+	auto_token = result_1->auto_token;
+	return result_1->message;
 }
 
 // TODO: get client output from here
 void request_user_approvall(CLIENT *clnt, std::string user_id,
-								struct tokken auto_token) {
+								struct tokken &auto_token) {
+
 
 	struct ser_response  *result_2;
 	struct cl_request  request_approve_1_arg;
 
 	request_approve_1_arg.client_id = string_to_char(user_id);
 	request_approve_1_arg.tokken = auto_token;
+	request_approve_1_arg.info = string_to_char("");
 
 	result_2 = request_approve_1(&request_approve_1_arg, clnt);
 	if (result_2 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
+
+	auto_token = result_2->auto_token;
 }
 
-void request_access(CLIENT *clnt) {
+void request_access(CLIENT *clnt, std::string user_id,
+						struct tokken auto_token) {
 	struct ser_response  *result_3;
 	struct cl_request  request_access_token_1_arg;
 
-	struct tokken empty_token;
-	empty_token.type = "";
-
 	request_access_token_1_arg.client_id = "3";
-	request_access_token_1_arg.tokken = empty_token;
+	request_access_token_1_arg.tokken = auto_token;
+
+	// Check if the user has auto_refresh enabled
+	if (user_refresh[user_id] == true) {
+		request_access_token_1_arg.info = string_to_char("REFRESH");
+	} else {
+		request_access_token_1_arg.info = string_to_char("");
+	}
 
 	result_3 = request_access_token_1(&request_access_token_1_arg, clnt);
 	if (result_3 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
 
-	printf("Result 3: %s\n", result_3->access_token.type);
+	printf("Result: %s\n", result_3->message);
+	printf("Access token: %s\n", result_3->access_token.value);
+	printf("Refresh token: %s\n", result_3->refresh_token.value);
+	printf("\n");
 }
 
 void validate_delegated_action_fun(CLIENT *clnt) {
@@ -89,6 +104,7 @@ void validate_delegated_action_fun(CLIENT *clnt) {
 
 	validate_delegated_action_1_arg.client_id = "4";
 	validate_delegated_action_1_arg.tokken = empty_token;
+	validate_delegated_action_1_arg.info = string_to_char("");
 
 	result_4 = validate_delegated_action_1(&validate_delegated_action_1_arg, clnt);
 	if (result_4 == (struct ser_response *) NULL) {
@@ -109,13 +125,20 @@ void process_request_cmd(CLIENT *clnt, std::string client_id,
 		user_refresh[client_id] = false;
 	}
 
-	// TODO: O-Auth scheme
-
 	// Step1 : request autorization
-	struct tokken auto_token = request_autorization_fun(clnt, client_id);
+	struct tokken auto_token = create_empty_token();
+
+	std::string message = request_autorization_fun(clnt, client_id, auto_token);
+	if (message == "USER_NOT_FOUND") {
+		std::cout << "USER_NOT_FOUND" << std::endl;
+		return;
+	}
 
 	// Step2 : request user approval
 	request_user_approvall(clnt, client_id, auto_token);
+
+	// Step3: request access token and refresh token
+	request_access(clnt, client_id, auto_token);
 
 }
 

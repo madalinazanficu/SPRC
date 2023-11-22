@@ -19,6 +19,7 @@ struct tokken create_empty_token() {
 	new_token.approved = 0;
 	new_token.type = "Empty token";
 	new_token.value = "empty";
+	new_token.ttl = 0;
 	return new_token;
 }
 
@@ -98,14 +99,27 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
 	static struct ser_response  result;
 
-	/*
-	 * insert server code here
-	 */
+	// Check if the autorization token is valid
+	if (argp->tokken.approved == 0) {
+		result.message = "REQUEST_DENIED";
+		result.auto_token = argp->tokken;
+		result.access_token = create_empty_token();
+		result.refresh_token = create_empty_token();
+		
+		return &result;
+	}
 
-	result.message = "Message";
-	result.auto_token = create_empty_token();
-	result.access_token = create_empty_token();
-	result.refresh_token = create_empty_token();
+	// Generate access and refresh tokens
+	result.access_token = create_token(0, "access_token", argp->tokken.value);
+	
+	if (argp->info == "REFRESH") {
+		result.refresh_token = create_token(0, "refresh_token", result.access_token.value);
+	} else {
+		result.refresh_token = create_empty_token();
+	}
+
+	result.message = "ACCESS_GRANTED";
+	result.auto_token = argp->tokken;
 
 	return &result;
 }

@@ -16,6 +16,7 @@ extern "C" {
 
 struct tokken {
 	int approved;
+	int ttl;
 	char *type;
 	char *value;
 };
@@ -23,6 +24,7 @@ typedef struct tokken tokken;
 
 struct cl_request {
 	char *client_id;
+	char *info;
 	struct tokken tokken;
 };
 typedef struct cl_request cl_request;

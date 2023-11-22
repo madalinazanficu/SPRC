@@ -1,11 +1,13 @@
 struct tokken {
     int approved;
+    int ttl;
     string type<>;
     string value<>;
 };
 
 struct cl_request {
     string client_id<>;
+    string info<>;
     struct tokken tokken;
 };
 

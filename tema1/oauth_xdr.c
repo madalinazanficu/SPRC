@@ -12,6 +12,8 @@ xdr_tokken (XDR *xdrs, tokken *objp)
 
 	 if (!xdr_int (xdrs, &objp->approved))
 		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->ttl))
+		 return FALSE;
 	 if (!xdr_string (xdrs, &objp->type, ~0))
 		 return FALSE;
 	 if (!xdr_string (xdrs, &objp->value, ~0))
@@ -25,6 +27,8 @@ xdr_cl_request (XDR *xdrs, cl_request *objp)
 	register int32_t *buf;
 
 	 if (!xdr_string (xdrs, &objp->client_id, ~0))
+		 return FALSE;
+	 if (!xdr_string (xdrs, &objp->info, ~0))
 		 return FALSE;
 	 if (!xdr_tokken (xdrs, &objp->tokken))
 		 return FALSE;
