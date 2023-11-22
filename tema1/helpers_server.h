@@ -27,6 +27,15 @@ extern std::vector<std::string> approvals;
 */
 extern std::unordered_map<std::string, std::unordered_map<std::string, std::string>> token_perm;
 
+
+/*
+    Each user will have a unique access token in the database
+    ex: user1 --> token1
+        user2 --> token2
+*/
+extern std::unordered_map<std::string, std::string> user_access_token;
+
+
 // Permission are grated to users in FIFO order
 extern int user_index;
 

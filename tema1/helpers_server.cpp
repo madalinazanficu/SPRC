@@ -4,6 +4,7 @@ std::unordered_map<std::string, bool> users;
 std::unordered_map<std::string, bool> resources;
 std::vector<std::string> approvals;
 std::unordered_map<std::string, std::unordered_map<std::string, std::string>> token_perm;
+std::unordered_map<std::string, std::string> user_access_token;
 int user_index = 0;
 
 /*
