@@ -27,13 +27,17 @@ extern std::vector<std::string> approvals;
 */
 extern std::unordered_map<std::string, std::unordered_map<std::string, std::string>> token_perm;
 
+// Permission are grated to users in FIFO order
+extern int user_index;
+
 // Server pre-configuration functions
 void command_line_arguments_support(int argc, char *argv[]);
 void read_users_db(char *users_db_file);
 void read_resources_db(char *resources_db_file);
 void read_approvals(char *users_approval_responses);
 
-std::unordered_map<std::string, std::string> parse_permissions(int index);
+std::string parse_permissions(int index,
+                            std::unordered_map<std::string, std::string>& permissions);
 
 
 #endif // HELPERS_SERVER_H

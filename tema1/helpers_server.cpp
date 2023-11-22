@@ -4,13 +4,14 @@ std::unordered_map<std::string, bool> users;
 std::unordered_map<std::string, bool> resources;
 std::vector<std::string> approvals;
 std::unordered_map<std::string, std::unordered_map<std::string, std::string>> token_perm;
+int user_index = 0;
 
 /*
     Parse each apprval line from usersApproval.db.
     Split each line by ',' and iterate 2 by 2 words to interpret the permissions.
 */
-std::unordered_map<std::string, std::string> parse_permissions(int index) {
-    std::unordered_map<std::string, std::string> permissions;
+std::string parse_permissions(int index,
+                            std::unordered_map<std::string, std::string>& permissions) {
 
     std::string line = approvals[index];
     std::stringstream ss(line);
@@ -24,8 +25,11 @@ std::unordered_map<std::string, std::string> parse_permissions(int index) {
 
     for (int i = 0; i < parts.size(); i += 2) {
         permissions[parts[i]] = parts[i + 1];
+        if (parts[i] == "*" && parts[i + 1] == "-") {
+            return "DENIED";
+        }
     }
-    return permissions;
+    return "PERMITTED";
 }
 
 void read_users_db(char *users_db_file) {

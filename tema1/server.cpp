@@ -18,7 +18,7 @@ struct tokken create_empty_token() {
 	struct tokken new_token;
 	new_token.approved = 0;
 	new_token.type = "Empty token";
-	new_token.value = "";
+	new_token.value = "empty";
 	return new_token;
 }
 
@@ -43,7 +43,7 @@ request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
 	static struct ser_response  result;
 
-	// Generate default tokens
+	// Default tokens
 	result.auto_token = create_empty_token();
 	result.access_token = create_empty_token();
 	result.refresh_token = create_empty_token();
@@ -61,18 +61,34 @@ request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	return &result;
 }
 
-// TODO:continue from here
+// TODO: get server output from here
 struct ser_response *
 request_approve_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
 	static struct ser_response  result;
 
-	result.message = "Message";
-	result.auto_token = create_empty_token();
+	// Default tokens
 	result.access_token = create_empty_token();
 	result.refresh_token = create_empty_token();
+	
+	std::unordered_map<std::string, std::string> permissions;
+	std::string out = parse_permissions(user_index, permissions);
+	user_index++;
 
+	// No permissions granted
+	if (out == "DENIED") {
+		result.message = "Not approved";
+		result.auto_token = argp->tokken;
+		return &result;
+	}
 
+	// Attach permissions to the token
+	token_perm[argp->tokken.value] = permissions;
+
+	// Permissions granted - sign the token
+	argp->tokken.approved = 1;
+	result.auto_token = argp->tokken;
+	result.message = "Approved";
 
 	return &result;
 }

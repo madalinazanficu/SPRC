@@ -43,15 +43,10 @@ struct tokken request_autorization_fun(CLIENT *clnt, std::string user_id) {
 		clnt_perror (clnt, "call failed");
 	}
 
-	printf("Result 1: %s\n", result_1->message);
-	printf("Result 1: %s\n", result_1->auto_token.type);
-	printf("Result 1: %s\n", result_1->auto_token.value);
-	printf("Result 1: %d\n", result_1->auto_token.approved);
-
 	return result_1->auto_token;
 }
 
-// TODO:continue implementation from here 
+// TODO: get client output from here
 void request_user_approvall(CLIENT *clnt, std::string user_id,
 								struct tokken auto_token) {
 
@@ -59,7 +54,7 @@ void request_user_approvall(CLIENT *clnt, std::string user_id,
 	struct cl_request  request_approve_1_arg;
 
 	request_approve_1_arg.client_id = string_to_char(user_id);
-	request_approve_1_arg.tokken = create_empty_token();
+	request_approve_1_arg.tokken = auto_token;
 
 	result_2 = request_approve_1(&request_approve_1_arg, clnt);
 	if (result_2 == (struct ser_response *) NULL) {
