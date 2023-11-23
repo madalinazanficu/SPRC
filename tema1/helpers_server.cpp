@@ -4,9 +4,14 @@ std::unordered_map<std::string, bool> users;
 std::unordered_map<std::string, bool> resources;
 std::vector<std::string> approvals;
 std::unordered_map<std::string, std::unordered_map<std::string, std::string>> token_perm;
-std::unordered_map<std::string, std::string> user_access_token;
 int token_availability;
 std::ofstream out_server;
+
+
+// Each user will have a unique access token in the database
+std::unordered_map<std::string, std::string> access_tokens;
+std::unordered_map<std::string, std::string> refresh_tokens;
+std::unordered_map<std::string, int> user_ttl;
 
 /*
     Parse each apprval line from usersApproval.db.

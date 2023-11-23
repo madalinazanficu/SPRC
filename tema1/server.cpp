@@ -115,9 +115,10 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 
 	// Generate access token
 	result.access_token = create_token(0, "access_token", argp->tokken.value, token_availability);
+	access_tokens[argp->client_id] = result.access_token.value;
+	user_ttl[argp->client_id] = result.access_token.ttl;
 	std::cout << "  AccessToken = " << result.access_token.value << std::endl;
-	user_access_token[argp->client_id] = result.access_token.value;
-	
+
 
 	// Attach permissions to the access token
 	std::unordered_map<std::string, std::string> permissions;
@@ -127,6 +128,7 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	// Generate refresh token
 	if (std::string(argp->info) == "REFRESH") {
 		result.refresh_token = create_token(0, "refresh_token", result.access_token.value, token_availability);
+		refresh_tokens[argp->client_id] = result.refresh_token.value;
 		std::cout << "  RefreshToken = " << result.refresh_token.value << std::endl;
 	} else {
 		result.refresh_token = create_empty_token();
@@ -147,10 +149,17 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	result.auto_token = create_empty_token();
 	result.access_token = create_empty_token();
 	result.refresh_token = create_empty_token();
+	result.message = "";
 
 	// Extract access token, user_id, resource and command from request
-	struct tokken access_token = argp->tokken;
 	std::string user_id = argp->client_id;
+	std::string acc_token = access_tokens[user_id];
+
+	// One command was executed
+	user_ttl[user_id] = user_ttl[user_id] - 1;
+	int ttl = user_ttl[user_id];
+
+	// Extract command and resource from the request
 	std::stringstream ss(argp->info);
 	std::vector<std::string> parts;
 
@@ -162,22 +171,33 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	std::string command = parts[0];
 	std::string resource = parts[1];
 
+	std::string error_message = "DENY (" + command + "," + resource+ ","
+				+ acc_token + "," + std::to_string(ttl) + ")";
+
 	// The resource is not available in the database
 	if (resources.find(resource) == resources.end()) {
+		std::cout << error_message << std::endl;
 		result.message = "RESOURCE_NOT_FOUND";
 		return &result;
 	}
 
 	// The resource is not available for the current access token
-	std::unordered_map<std::string, std::string> tok_perm = token_perm[access_token.value];
+	std::unordered_map<std::string, std::string> tok_perm = token_perm[acc_token];
 	std::string res_perm = tok_perm[resource];
 	char first_letter = command[0];
+	if (command == "EXECUTE")
+		first_letter = 'X';
+
 	bool found = res_perm.find(first_letter) != std::string::npos;
 
 	if (found == false) {
+		std::cout << error_message << std::endl;
 		result.message = "OPERATION_NOT_PERMITTED";
 		return &result;
 	}
+
+	std::cout << "PERMIT (" << command << "," << resource << ","
+				<< acc_token  << "," << ttl << ")" << std::endl;
 
 	result.message = "PERMISSION_GRANTED";
 	return &result;
@@ -186,31 +206,72 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 struct ser_response *
 refresh_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
+	// Default response
 	static struct ser_response  result;
-
-	std::string refresh_token = argp->tokken.value;
-	std::string access_token = user_access_token[argp->client_id];
-
-	// Generate new access token based on the refresh token
-	struct tokken new_access_token = create_token(0, "access_token",
-													refresh_token, token_availability);
-
-	// Update the access token in the database
-	user_access_token[argp->client_id] = new_access_token.value;
-
-	// Update the permissions associated with the new access token
-	token_perm[new_access_token.value] = token_perm[access_token];
-	token_perm.erase(access_token);
-
-	// Genereate new refresh token
-	struct tokken new_refresh_token = create_token(0, "refresh_token",
-											new_access_token.value, token_availability);
-
-	// Return tthe response to the client
-	result.message = "ACCESS_GRANTED";
+	result.message = "";
 	result.auto_token = create_empty_token();
-	result.access_token = new_access_token;
-	result.refresh_token = new_refresh_token;
+	result.access_token = create_empty_token();
+	result.refresh_token = create_empty_token();
+
+	// Extract command and resource from the request
+	std::string user_id = argp->client_id;
+	std::stringstream ss(argp->info);
+	std::vector<std::string> parts;
+
+	while (ss.good()) {
+		std::string substr;
+		std::getline(ss, substr, ',');
+		parts.push_back(substr);
+	}
+	std::string command = parts[0];
+	std::string resource = parts[1];
+	std::string error_message = "DENY (" + command + "," + resource + ",,0)";
+
+	// Get tokens from the database		
+	std::string acc_token = access_tokens[user_id];
+	std::string ref_token = refresh_tokens[user_id];
+	int ttl = user_ttl[user_id];
+
+
+	// Check if the access token is valid
+	if (acc_token == "") {
+		std::cout << error_message << std::endl;
+		result.message = "PERMISSION_DENIED";
+		return &result;
+	}
+
+	// Check if the TTL of the access token is 0 and we don't have any refresh token
+	if (ttl == 0) {
+		if (ref_token == "") {
+			std::cout << error_message << std::endl;
+			result.message = "TOKEN_EXPIRED";
+			return &result;
+		}
+
+		// Generate new access token based on the refresh token
+		struct tokken new_access_token = create_token(0, "access_token",
+												ref_token, token_availability);
+
+		// Update the permissions associated with the new access token
+		token_perm[new_access_token.value] = token_perm[acc_token];
+		token_perm.erase(acc_token);
+
+		// Genereate new refresh token
+		struct tokken new_refresh_token = create_token(0, "refresh_token",
+												new_access_token.value, token_availability);
+		
+	
+		// Save the tokens in the database
+		access_tokens[argp->client_id] = new_access_token.value;
+		refresh_tokens[argp->client_id] = new_refresh_token.value;
+		user_ttl[argp->client_id] = new_access_token.ttl;
+
+		// Return the response to the client
+		result.message = "TOKEN_REFRESHED";
+		result.access_token = new_access_token;
+		result.refresh_token = new_refresh_token;
+	}
+
 
 	return &result;
 }

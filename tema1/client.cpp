@@ -138,23 +138,28 @@ void request_access(CLIENT *clnt, std::string user_id,
 	user_ttl[user_id] = result_3->access_token.ttl;
 }
 
-void validate_delegated_action_fun(CLIENT *clnt) {
-	struct ser_response  *result_4;
+
+// The client want to execute a command with the access token to a resource
+void validate_delegated_action_fun(CLIENT *clnt, std::string client_id,
+								std::string command, std::string resource) {
+
+	std::string access_token = access_tok[client_id];
+	int ttl = user_ttl[client_id];
+
 	struct cl_request  validate_delegated_action_1_arg;
+	struct ser_response  *result_4;
 
-	struct tokken empty_token;
-	empty_token.type = "";
-
-	validate_delegated_action_1_arg.client_id = "4";
-	validate_delegated_action_1_arg.tokken = empty_token;
-	validate_delegated_action_1_arg.info = string_to_char("");
+	// Sever's input (client_id, access_token, command, resource)
+	validate_delegated_action_1_arg.client_id = string_to_char(client_id);
+	validate_delegated_action_1_arg.tokken = create_token(0, "access_token", access_token , ttl);
+	validate_delegated_action_1_arg.info = string_to_char(command + "," + resource);
 
 	result_4 = validate_delegated_action_1(&validate_delegated_action_1_arg, clnt);
 	if (result_4 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
 
-	printf("Result 4: %s\n", result_4->access_token.type);
+	std::cout << result_4->message << std::endl;
 }
 
 void process_request_cmd(CLIENT *clnt, std::string client_id,
@@ -185,7 +190,9 @@ void process_request_cmd(CLIENT *clnt, std::string client_id,
 }
 
 
-void refresh_token_fun(CLIENT *clnt, std::string client_id) {
+std::string refresh_token_fun(CLIENT *clnt, std::string client_id,
+							std::string command, std::string resource) {
+
 	std::string access_token = access_tok[client_id];
 	std::string refresh_token = refresh_tok[client_id];
 
@@ -196,41 +203,23 @@ void refresh_token_fun(CLIENT *clnt, std::string client_id) {
 	// The request is made with the refresh token
 	refresh_access_token_1_arg.client_id = string_to_char(client_id);
 	refresh_access_token_1_arg.tokken = refresh;
-	refresh_access_token_1_arg.info = string_to_char("");
+	refresh_access_token_1_arg.info = string_to_char(command + "," + resource);
 
 	result_5 = refresh_access_token_1(&refresh_access_token_1_arg, clnt);
 	if (result_5 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
-	
+
+	// Error message
+	if (std::string(result_5->message) != "TOKEN_REFRESHED") {
+		return result_5->message;
+	}
+
 	// Store the access, refresh tokens and token availability
 	access_tok[client_id] = result_5->access_token.value;
 	refresh_tok[client_id] = result_5->refresh_token.value;
 	user_ttl[client_id] = result_5->access_token.ttl;
-}
-
-
-// The client want to execute a command with the access token to a resource
-void validate_delegated_action_fun(CLIENT *clnt, std::string client_id,
-								std::string command, std::string resource) {
-
-	std::string access_token = access_tok[client_id];
-	int ttl = user_ttl[client_id];
-
-	struct cl_request  validate_delegated_action_1_arg;
-	struct ser_response  *result_4;
-
-	// Sever's input (client_id, access_token, command, resource)
-	validate_delegated_action_1_arg.client_id = string_to_char(client_id);
-	validate_delegated_action_1_arg.tokken = create_token(0, "access_token", access_token , ttl);
-	validate_delegated_action_1_arg.info = string_to_char(command + "," + resource);
-
-	result_4 = validate_delegated_action_1(&validate_delegated_action_1_arg, clnt);
-	if (result_4 == (struct ser_response *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-
-	std::cout << result_4->message << std::endl;
+	return result_5->message;
 }
 
 
@@ -241,24 +230,12 @@ void process_other_cmd(CLIENT *clnt, std::string client_id,
 	std::string refresh_token = refresh_tok[client_id];
 	int ttl = user_ttl[client_id];
 
-	if (access_token == "") {
-		std::cout << "PERMISION_DENIED" << std::endl;
+	std::string message = refresh_token_fun(clnt, client_id, command, resource);
+	if (message == "PERMISSION_DENIED" || message == "TOKEN_EXPIRED") {
+		std::cout << message << std::endl;
 		return;
 	}
-
-	// Step1 : check if the current need and can refresh the access token
-	if (ttl == 0) {
-		if (refresh_token == "") {
-			std::cout << "TOKEN_EXPIRATED" << std::endl;
-			return;
-		}
-		refresh_token_fun(clnt, client_id);
-	}
-
-	// TODO: validate the access token
-	user_ttl[client_id] = user_ttl[client_id] - 1;
 	validate_delegated_action_fun(clnt, client_id, command, resource);
-
 }
 
 
@@ -301,12 +278,6 @@ int main (int argc, char *argv[])
 		}
 	}
 
-
-	// O-Auth scheme
-	// request_autorization_fun(clnt);
-	// request_access(clnt);
-	// request_access(clnt);
-	// validate_delegated_action_fun(clnt);
 
 	out_client.close();
 	clnt_destroy (clnt);

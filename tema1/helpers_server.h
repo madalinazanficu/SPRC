@@ -10,6 +10,12 @@
 
 // ----------------------- SERVER SIDE -----------------------------
 
+
+extern std::unordered_map<std::string, std::string> access_tokens;
+extern std::unordered_map<std::string, std::string> refresh_tokens;
+extern std::unordered_map<std::string, int> user_ttl;
+
+
 // Saved users id read from usersIDs.db: entry - (user_id, active=true) 
 extern std::unordered_map<std::string, bool> users;
 
@@ -26,14 +32,6 @@ extern std::vector<std::string> approvals;
                --> resource2 --> RIMD
 */
 extern std::unordered_map<std::string, std::unordered_map<std::string, std::string>> token_perm;
-
-
-/*
-    Each user will have a unique access token in the database
-    ex: user1 --> token1
-        user2 --> token2
-*/
-extern std::unordered_map<std::string, std::string> user_access_token;
 
 
 // Permission are grated to users in FIFO order
