@@ -11,12 +11,14 @@
 #include<sstream>
 #include<vector>
 #include "helpers_client.h"
+#include <stdlib.h>
 
 std::unordered_map<std::string, bool> user_refresh;
 std::unordered_map<std::string, std::string> access_tok;
 std::unordered_map<std::string, std::string> refresh_tok;
 std::unordered_map<std::string, int> user_ttl;
 std::ofstream out_client;
+int user_index = 0;
 
 
 char *string_to_char(std::string str) {
@@ -81,12 +83,15 @@ void request_user_approvall(CLIENT *clnt, std::string user_id,
 
 	request_approve_1_arg.client_id = string_to_char(user_id);
 	request_approve_1_arg.tokken = auto_token;
-	request_approve_1_arg.info = string_to_char("");
+	request_approve_1_arg.info = string_to_char(std::to_string(user_index));
 
 	result_2 = request_approve_1(&request_approve_1_arg, clnt);
 	if (result_2 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
+
+	// A new user received a set of permissions
+	user_index++;
 
 	auto_token = result_2->auto_token;
 }
@@ -219,15 +224,11 @@ void validate_delegated_action_fun(CLIENT *clnt, std::string client_id,
 	if (result_4 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
-
-	std::cout << result_4->message << std::endl;
 }
 
 
 void process_other_cmd(CLIENT *clnt, std::string client_id,
 						std::string command, std::string resource) {
-
-	std::cout << command << std::endl;
 
 	std::string access_token = access_tok[client_id];
 	std::string refresh_token = refresh_tok[client_id];
@@ -290,7 +291,6 @@ int main (int argc, char *argv[])
 			process_request_cmd(clnt, command_parts[0], command_parts[2]);
 		} else {
 			process_other_cmd(clnt, command_parts[0], command_parts[1], command_parts[2]);
-			std::cout << "Command\n";
 		}
 	}
 

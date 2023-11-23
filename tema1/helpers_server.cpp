@@ -5,7 +5,7 @@ std::unordered_map<std::string, bool> resources;
 std::vector<std::string> approvals;
 std::unordered_map<std::string, std::unordered_map<std::string, std::string>> token_perm;
 std::unordered_map<std::string, std::string> user_access_token;
-int user_index = 0;
+// int user_index = 0;
 int token_availability;
 std::ofstream out_server;
 
@@ -25,7 +25,7 @@ std::string parse_permissions(int index,
         std::getline(ss, substr, ',');
         parts.push_back(substr);
     }
-
+    
     for (int i = 0; i < parts.size(); i += 2) {
         permissions[parts[i]] = parts[i + 1];
         if (parts[i] == "*" && parts[i + 1] == "-") {

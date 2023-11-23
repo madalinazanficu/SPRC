@@ -77,11 +77,10 @@ request_approve_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	// Default tokens
 	result.access_token = create_empty_token();
 	result.refresh_token = create_empty_token();
+	int user_index = atoi(argp->info);
 	
-	// std::unordered_map<std::string, std::string> permissions;
-	// std::string out = parse_permissions(user_index, permissions);
-	// user_index++;
-	std::string out = "";
+	std::unordered_map<std::string, std::string> permissions;
+	std::string out = parse_permissions(user_index, permissions);
 
 	// No permissions granted
 	if (out == "DENIED") {
@@ -91,7 +90,7 @@ request_approve_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	}
 
 	// Attach permissions to the token
-	// token_perm[argp->tokken.value] = permissions;
+	token_perm[argp->tokken.value] = permissions;
 
 	// Permissions granted - sign the token
 	argp->tokken.approved = 1;
@@ -138,7 +137,7 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 struct ser_response *
 validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
-	std::cout << "VALIDATE DELEGATED ACTION" << std::endl;
+	std::cout << "VALIDATE_DELEGATED_ACTION" << std::endl;
 
 	// Prepare the default response from server
 	static struct ser_response  result;
@@ -148,25 +147,25 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	result.refresh_token = create_empty_token();
 
 	// Extract access token, user_id, resource and command from request
-	// struct tokken access_token = argp->tokken;
-	// std::string user_id = argp->client_id;
-	// std::stringstream ss(argp->info);
-	// std::vector<std::string> parts;
+	struct tokken access_token = argp->tokken;
+	std::string user_id = argp->client_id;
+	std::stringstream ss(argp->info);
+	std::vector<std::string> parts;
 
-	// while (ss.good()) {
-	// 	std::string substr;
-	// 	std::getline(ss, substr, ',');
-	// 	parts.push_back(substr);
-	// }
-	// std::string command = parts[0];
-	// std::string resource = parts[1];
+	while (ss.good()) {
+		std::string substr;
+		std::getline(ss, substr, ',');
+		parts.push_back(substr);
+	}
+	std::string command = parts[0];
+	std::string resource = parts[1];
 	
 
-	// // The resource is not available in the database
-	// if (resources.find(resource) == resources.end()) {
-	// 	result.message = "RESOURCE_NOT_FOUND";
-	// 	return &result;
-	// }
+	// The resource is not available in the database
+	if (resources.find(resource) == resources.end()) {
+		result.message = "RESOURCE_NOT_FOUND";
+		return &result;
+	}
 
 	// The operation is not available for the current access token
 	// std::unordered_map<std::string, std::string> tok_perm = token_perm[access_token.value];
