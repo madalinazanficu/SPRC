@@ -45,7 +45,7 @@ struct ser_response *
 request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
 	static struct ser_response  result;
-	out_server << "BEGIN " << argp->client_id << " AUTHZ" << std::endl;
+	std::cout << "BEGIN " << argp->client_id << " AUTHZ" << std::endl;
 
 	// Default tokens
 	result.auto_token = create_empty_token();
@@ -63,7 +63,7 @@ request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	result.message = "USER_FOUND";
 
 
-	out_server << "  RequestToken = " << result.auto_token.value << std::endl;
+	std::cout << "  RequestToken = " << result.auto_token.value << std::endl;
 
 	return &result;
 }
@@ -77,8 +77,9 @@ request_approve_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	// Default tokens
 	result.access_token = create_empty_token();
 	result.refresh_token = create_empty_token();
-	int user_index = atoi(argp->info);
+	int user_index = argp->user_index;
 	
+	// Check if the user has been authorized
 	std::unordered_map<std::string, std::string> permissions;
 	std::string out = parse_permissions(user_index, permissions);
 
@@ -88,9 +89,6 @@ request_approve_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 		result.auto_token = argp->tokken;
 		return &result;
 	}
-
-	// Attach permissions to the token
-	token_perm[argp->tokken.value] = permissions;
 
 	// Permissions granted - sign the token
 	argp->tokken.approved = 1;
@@ -115,15 +113,21 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 		return &result;
 	}
 
-	// Generate access and refresh tokens
+	// Generate access token
 	result.access_token = create_token(0, "access_token", argp->tokken.value, token_availability);
-	out_server << "  AccessToken = " << result.access_token.value << std::endl;
+	std::cout << "  AccessToken = " << result.access_token.value << std::endl;
 	user_access_token[argp->client_id] = result.access_token.value;
 	
-	
+
+	// Attach permissions to the access token
+	std::unordered_map<std::string, std::string> permissions;
+	parse_permissions(argp->user_index, permissions);
+	token_perm[result.access_token.value] = permissions;
+
+	// Generate refresh token
 	if (std::string(argp->info) == "REFRESH") {
 		result.refresh_token = create_token(0, "refresh_token", result.access_token.value, token_availability);
-		out_server << "  RefreshToken = " << result.refresh_token.value << std::endl;
+		std::cout << "  RefreshToken = " << result.refresh_token.value << std::endl;
 	} else {
 		result.refresh_token = create_empty_token();
 	}
@@ -137,8 +141,6 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 struct ser_response *
 validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
-	std::cout << "VALIDATE_DELEGATED_ACTION" << std::endl;
-
 	// Prepare the default response from server
 	static struct ser_response  result;
 	result.message = "VALIDATE_DELEGATED_ACTION";
@@ -159,7 +161,6 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	}
 	std::string command = parts[0];
 	std::string resource = parts[1];
-	
 
 	// The resource is not available in the database
 	if (resources.find(resource) == resources.end()) {
@@ -167,12 +168,18 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 		return &result;
 	}
 
-	// The operation is not available for the current access token
-	// std::unordered_map<std::string, std::string> tok_perm = token_perm[access_token.value];
-	// std::string res_perm = tok_perm[resource];
-	// std::cout << "PERMISSIONS: " << res_perm << std::endl;
-	
+	// The resource is not available for the current access token
+	std::unordered_map<std::string, std::string> tok_perm = token_perm[access_token.value];
+	std::string res_perm = tok_perm[resource];
+	char first_letter = command[0];
+	bool found = res_perm.find(first_letter) != std::string::npos;
 
+	if (found == false) {
+		result.message = "OPERATION_NOT_PERMITTED";
+		return &result;
+	}
+
+	result.message = "PERMISSION_GRANTED";
 	return &result;
 }
 

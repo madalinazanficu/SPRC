@@ -26,6 +26,8 @@ xdr_cl_request (XDR *xdrs, cl_request *objp)
 {
 	register int32_t *buf;
 
+	 if (!xdr_int (xdrs, &objp->user_index))
+		 return FALSE;
 	 if (!xdr_string (xdrs, &objp->client_id, ~0))
 		 return FALSE;
 	 if (!xdr_string (xdrs, &objp->info, ~0))

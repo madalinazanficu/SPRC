@@ -23,6 +23,7 @@ struct tokken {
 typedef struct tokken tokken;
 
 struct cl_request {
+	int user_index;
 	char *client_id;
 	char *info;
 	struct tokken tokken;

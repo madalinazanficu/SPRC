@@ -17,6 +17,8 @@ std::unordered_map<std::string, bool> user_refresh;
 std::unordered_map<std::string, std::string> access_tok;
 std::unordered_map<std::string, std::string> refresh_tok;
 std::unordered_map<std::string, int> user_ttl;
+std::unordered_map<std::string, int> users_idx;
+
 std::ofstream out_client;
 int user_index = 0;
 
@@ -83,7 +85,8 @@ void request_user_approvall(CLIENT *clnt, std::string user_id,
 
 	request_approve_1_arg.client_id = string_to_char(user_id);
 	request_approve_1_arg.tokken = auto_token;
-	request_approve_1_arg.info = string_to_char(std::to_string(user_index));
+	request_approve_1_arg.info = string_to_char("");
+	request_approve_1_arg.user_index = user_index;
 
 	result_2 = request_approve_1(&request_approve_1_arg, clnt);
 	if (result_2 == (struct ser_response *) NULL) {
@@ -91,6 +94,7 @@ void request_user_approvall(CLIENT *clnt, std::string user_id,
 	}
 
 	// A new user received a set of permissions
+	users_idx[user_id] = user_index;
 	user_index++;
 
 	auto_token = result_2->auto_token;
@@ -101,8 +105,9 @@ void request_access(CLIENT *clnt, std::string user_id,
 	struct ser_response  *result_3;
 	struct cl_request  request_access_token_1_arg;
 
-	request_access_token_1_arg.client_id = "3";
+	request_access_token_1_arg.client_id = string_to_char(user_id);
 	request_access_token_1_arg.tokken = auto_token;
+	request_access_token_1_arg.user_index = users_idx[user_id];
 
 	// Check if the user has auto_refresh enabled
 	if (user_refresh[user_id] == true) {
@@ -117,7 +122,7 @@ void request_access(CLIENT *clnt, std::string user_id,
 	}
 
 	if (std::string(result_3->message) == "REQUEST_DENIED") {
-		out_client << result_3->message << std::endl;
+		std::cout << result_3->message << std::endl;
 		return;
 	}
 
@@ -125,7 +130,7 @@ void request_access(CLIENT *clnt, std::string user_id,
 	if (std::string(result_3->refresh_token.value) != "") {
 		out_val += " , " + std::string(result_3->refresh_token.value);
 	}
-	out_client << out_val << std::endl;
+	std::cout << out_val << std::endl;
 
 	// Store the access, refresh tokens and token availability
 	access_tok[user_id] = result_3->access_token.value;
@@ -168,7 +173,7 @@ void process_request_cmd(CLIENT *clnt, std::string client_id,
 
 	std::string message = request_autorization_fun(clnt, client_id, auto_token);
 	if (message == "USER_NOT_FOUND") {
-		out_client << "USER_NOT_FOUND" << std::endl;
+		std::cout << "USER_NOT_FOUND" << std::endl;
 		return;
 	}
 
@@ -224,6 +229,8 @@ void validate_delegated_action_fun(CLIENT *clnt, std::string client_id,
 	if (result_4 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
+
+	std::cout << result_4->message << std::endl;
 }
 
 
@@ -235,14 +242,14 @@ void process_other_cmd(CLIENT *clnt, std::string client_id,
 	int ttl = user_ttl[client_id];
 
 	if (access_token == "") {
-		out_client << "PERMISION_DENIED" << std::endl;
+		std::cout << "PERMISION_DENIED" << std::endl;
 		return;
 	}
 
 	// Step1 : check if the current need and can refresh the access token
 	if (ttl == 0) {
 		if (refresh_token == "") {
-			out_client << "TOKEN_EXPIRATED" << std::endl;
+			std::cout << "TOKEN_EXPIRATED" << std::endl;
 			return;
 		}
 		refresh_token_fun(clnt, client_id);

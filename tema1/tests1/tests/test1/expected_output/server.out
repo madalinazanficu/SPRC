@@ -1,4 +1,3 @@
-./server /home/madalina/SPRC/tema1/tests/tests/test1/userIDs.db /home/madalina/SPRC/tema1/tests/tests/test1/resources.db /home/madalina/SPRC/tema1/tests/tests/test1/approvals.db 5
 BEGIN X5B0TWjmeNtU3vd AUTHZ
   RequestToken = v53teNBmWTXjUd0
   AccessToken = 0Ud5mTtBWNvj3eX

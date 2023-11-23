@@ -6,6 +6,7 @@ struct tokken {
 };
 
 struct cl_request {
+    int user_index;
     string client_id<>;
     string info<>;
     struct tokken tokken;
