@@ -128,7 +128,7 @@ void request_access(CLIENT *clnt, std::string user_id,
 
 	std::string out_val = result_3->auto_token.value + std::string(" -> ") + result_3->access_token.value;
 	if (std::string(result_3->refresh_token.value) != "") {
-		out_val += " , " + std::string(result_3->refresh_token.value);
+		out_val += "," + std::string(result_3->refresh_token.value);
 	}
 	std::cout << out_val << std::endl;
 

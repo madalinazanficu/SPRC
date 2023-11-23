@@ -18,7 +18,7 @@ rename:
 	mv oauth_server.c server.cpp
 
 run-client:
-	./client localhost /home/madalina/SPRC/tema1/tests/test2/client.in
+	./client localhost /home/madalina/SPRC/tema1/tests/test4/client.in
 
 run-server:
-	./server /home/madalina/SPRC/tema1/tests/test2/userIDs.db /home/madalina/SPRC/tema1/tests/test2/resources.db /home/madalina/SPRC/tema1/tests/test2/approvals.db 2
+	./server /home/madalina/SPRC/tema1/tests/test4/userIDs.db /home/madalina/SPRC/tema1/tests/test4/resources.db /home/madalina/SPRC/tema1/tests/test4/approvals.db 3

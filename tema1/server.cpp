@@ -206,6 +206,7 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 struct ser_response *
 refresh_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
+	
 	// Default response
 	static struct ser_response  result;
 	result.message = "";
@@ -270,6 +271,10 @@ refresh_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 		result.message = "TOKEN_REFRESHED";
 		result.access_token = new_access_token;
 		result.refresh_token = new_refresh_token;
+
+		std::cout << "BEGIN " << argp->client_id << " AUTHZ REFRESH" << std::endl;
+		std::cout << "  AccessToken = " << new_access_token.value << std::endl;
+		std::cout << "  RefreshToken = " << new_refresh_token.value << std::endl;
 	}
 
 
