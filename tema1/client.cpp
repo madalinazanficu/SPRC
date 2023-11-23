@@ -167,12 +167,11 @@ void process_request_cmd(CLIENT *clnt, std::string client_id,
 		return;
 	}
 
-	// Step2 : request user approval
+	// Step2: request user approval
 	request_user_approvall(clnt, client_id, auto_token);
 
 	// Step3: request access token and refresh token
 	request_access(clnt, client_id, auto_token);
-
 }
 
 
@@ -184,6 +183,7 @@ void refresh_token_fun(CLIENT *clnt, std::string client_id) {
 	struct cl_request  refresh_access_token_1_arg;
 	struct tokken refresh = create_token(0, "refresh_token", refresh_token, 0);
 
+	// The request is made with the refresh token
 	refresh_access_token_1_arg.client_id = string_to_char(client_id);
 	refresh_access_token_1_arg.tokken = refresh;
 	refresh_access_token_1_arg.info = string_to_char("");
@@ -193,13 +193,34 @@ void refresh_token_fun(CLIENT *clnt, std::string client_id) {
 		clnt_perror (clnt, "call failed");
 	}
 	
+	// Store the access, refresh tokens and token availability
 	access_tok[client_id] = result_5->access_token.value;
 	refresh_tok[client_id] = result_5->refresh_token.value;
 	user_ttl[client_id] = result_5->access_token.ttl;
+}
 
-	out_client << "New access token: " << result_5->access_token.value << std::endl;
-	out_client << "New refresh token: " << result_5->refresh_token.value << std::endl;
-	out_client << "New ttl: " << result_5->access_token.ttl << std::endl;
+
+// The client want to execute a command with the access token to a resource
+void validate_delegated_action_fun(CLIENT *clnt, std::string client_id,
+								std::string command, std::string resource) {
+
+	std::string access_token = access_tok[client_id];
+	int ttl = user_ttl[client_id];
+
+	struct cl_request  validate_delegated_action_1_arg;
+	struct ser_response  *result_4;
+
+	// Sever's input (client_id, access_token, command, resource)
+	validate_delegated_action_1_arg.client_id = string_to_char(client_id);
+	validate_delegated_action_1_arg.tokken = create_token(0, "access_token", access_token , ttl);
+	validate_delegated_action_1_arg.info = string_to_char(command + "," + resource);
+
+	result_4 = validate_delegated_action_1(&validate_delegated_action_1_arg, clnt);
+	if (result_4 == (struct ser_response *) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
+
+	std::cout << result_4->message << std::endl;
 }
 
 
@@ -228,6 +249,7 @@ void process_other_cmd(CLIENT *clnt, std::string client_id,
 
 	// TODO: validate the access token
 	user_ttl[client_id] = user_ttl[client_id] - 1;
+	validate_delegated_action_fun(clnt, client_id, command, resource);
 
 }
 
@@ -268,6 +290,7 @@ int main (int argc, char *argv[])
 			process_request_cmd(clnt, command_parts[0], command_parts[2]);
 		} else {
 			process_other_cmd(clnt, command_parts[0], command_parts[1], command_parts[2]);
+			std::cout << "Command\n";
 		}
 	}
 
