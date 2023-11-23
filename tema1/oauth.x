@@ -24,5 +24,6 @@ program OAUTH_PROG {
         struct ser_response request_approve(struct cl_request) = 2;
         struct ser_response request_access_token(struct cl_request) = 3;
         struct ser_response validate_delegated_action(struct cl_request) = 4;
+        struct ser_response refresh_access_token(struct cl_request) = 5;
     } = 1;
 } = 0x33445566;

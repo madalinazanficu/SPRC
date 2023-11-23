@@ -19,6 +19,8 @@ oauth_prog_1(char *host)
 	struct cl_request  request_access_token_1_arg;
 	struct ser_response  *result_4;
 	struct cl_request  validate_delegated_action_1_arg;
+	struct ser_response  *result_5;
+	struct cl_request  refresh_access_token_1_arg;
 
 #ifndef	DEBUG
 	clnt = clnt_create (host, OAUTH_PROG, OAUTH_VERS, "udp");
@@ -42,6 +44,10 @@ oauth_prog_1(char *host)
 	}
 	result_4 = validate_delegated_action_1(&validate_delegated_action_1_arg, clnt);
 	if (result_4 == (struct ser_response *) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
+	result_5 = refresh_access_token_1(&refresh_access_token_1_arg, clnt);
+	if (result_5 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
 #ifndef	DEBUG

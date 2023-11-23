@@ -13,6 +13,9 @@
 #include "helpers_client.h"
 
 std::unordered_map<std::string, bool> user_refresh;
+std::unordered_map<std::string, std::string> access_tok;
+std::unordered_map<std::string, std::string> refresh_tok;
+std::unordered_map<std::string, int> user_ttl;
 std::ofstream out_client;
 
 
@@ -30,6 +33,23 @@ struct tokken create_empty_token() {
 	new_token.ttl = 0;
 	return new_token;
 }
+
+struct tokken create_token(int approved,
+							std::string type,
+							std::string initial_value,
+							int ttl = 0) {
+
+	struct tokken new_token;
+
+
+	new_token.approved = approved;
+	new_token.type = string_to_char(type);
+	new_token.value = string_to_char(initial_value);
+	new_token.ttl = ttl;
+
+	return new_token;
+}
+
 
 
 // TODO: get client output from here
@@ -101,6 +121,11 @@ void request_access(CLIENT *clnt, std::string user_id,
 		out_val += " , " + std::string(result_3->refresh_token.value);
 	}
 	out_client << out_val << std::endl;
+
+	// Store the access, refresh tokens and token availability
+	access_tok[user_id] = result_3->access_token.value;
+	refresh_tok[user_id] = result_3->refresh_token.value;
+	user_ttl[user_id] = result_3->access_token.ttl;
 }
 
 void validate_delegated_action_fun(CLIENT *clnt) {
@@ -150,10 +175,60 @@ void process_request_cmd(CLIENT *clnt, std::string client_id,
 
 }
 
+
+void refresh_token_fun(CLIENT *clnt, std::string client_id) {
+	std::string access_token = access_tok[client_id];
+	std::string refresh_token = refresh_tok[client_id];
+
+	struct ser_response  *result_5;
+	struct cl_request  refresh_access_token_1_arg;
+	struct tokken refresh = create_token(0, "refresh_token", refresh_token, 0);
+
+	refresh_access_token_1_arg.client_id = string_to_char(client_id);
+	refresh_access_token_1_arg.tokken = refresh;
+	refresh_access_token_1_arg.info = string_to_char("");
+
+	result_5 = refresh_access_token_1(&refresh_access_token_1_arg, clnt);
+	if (result_5 == (struct ser_response *) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
+	
+	access_tok[client_id] = result_5->access_token.value;
+	refresh_tok[client_id] = result_5->refresh_token.value;
+	user_ttl[client_id] = result_5->access_token.ttl;
+
+	out_client << "New access token: " << result_5->access_token.value << std::endl;
+	out_client << "New refresh token: " << result_5->refresh_token.value << std::endl;
+	out_client << "New ttl: " << result_5->access_token.ttl << std::endl;
+}
+
+
 void process_other_cmd(CLIENT *clnt, std::string client_id,
 						std::string command, std::string resource) {
 
-	std::cout << "Command:" << command << std::endl;
+	std::cout << command << std::endl;
+
+	std::string access_token = access_tok[client_id];
+	std::string refresh_token = refresh_tok[client_id];
+	int ttl = user_ttl[client_id];
+
+	if (access_token == "") {
+		out_client << "PERMISION_DENIED" << std::endl;
+		return;
+	}
+
+	// Step1 : check if the current need and can refresh the access token
+	if (ttl == 0) {
+		if (refresh_token == "") {
+			out_client << "TOKEN_EXPIRATED" << std::endl;
+			return;
+		}
+		refresh_token_fun(clnt, client_id);
+	}
+
+	// TODO: validate the access token
+	user_ttl[client_id] = user_ttl[client_id] - 1;
+
 }
 
 

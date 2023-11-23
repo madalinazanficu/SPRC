@@ -118,7 +118,9 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	// Generate access and refresh tokens
 	result.access_token = create_token(0, "access_token", argp->tokken.value, token_availability);
 	out_server << "  AccessToken = " << result.access_token.value << std::endl;
-
+	user_access_token[argp->client_id] = result.access_token.value;
+	
+	
 	if (std::string(argp->info) == "REFRESH") {
 		result.refresh_token = create_token(0, "refresh_token", result.access_token.value, token_availability);
 		out_server << "  RefreshToken = " << result.refresh_token.value << std::endl;
@@ -145,6 +147,38 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	result.auto_token = create_empty_token();
 	result.access_token = create_empty_token();
 	result.refresh_token = create_empty_token();
+
+	return &result;
+}
+
+struct ser_response *
+refresh_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
+{
+	static struct ser_response  result;
+
+	std::string refresh_token = argp->tokken.value;
+	std::string access_token = user_access_token[argp->client_id];
+
+	// Generate new access token based on the refresh token
+	struct tokken new_access_token = create_token(0, "access_token",
+													refresh_token, token_availability);
+
+	// Update the access token in the database
+	user_access_token[argp->client_id] = new_access_token.value;
+
+	// Update the permissions associated with the new access token
+	token_perm[new_access_token.value] = token_perm[access_token];
+	token_perm.erase(access_token);
+
+	// Genereate new refresh token
+	struct tokken new_refresh_token = create_token(0, "refresh_token",
+											new_access_token.value, token_availability);
+
+	// Return tthe response to the client
+	result.message = "ACCESS_GRANTED";
+	result.auto_token = create_empty_token();
+	result.access_token = new_access_token;
+	result.refresh_token = new_refresh_token;
 
 	return &result;
 }

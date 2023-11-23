@@ -53,6 +53,9 @@ extern  struct ser_response * request_access_token_1_svc(struct cl_request *, st
 #define validate_delegated_action 4
 extern  struct ser_response * validate_delegated_action_1(struct cl_request *, CLIENT *);
 extern  struct ser_response * validate_delegated_action_1_svc(struct cl_request *, struct svc_req *);
+#define refresh_access_token 5
+extern  struct ser_response * refresh_access_token_1(struct cl_request *, CLIENT *);
+extern  struct ser_response * refresh_access_token_1_svc(struct cl_request *, struct svc_req *);
 extern int oauth_prog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
@@ -68,6 +71,9 @@ extern  struct ser_response * request_access_token_1_svc();
 #define validate_delegated_action 4
 extern  struct ser_response * validate_delegated_action_1();
 extern  struct ser_response * validate_delegated_action_1_svc();
+#define refresh_access_token 5
+extern  struct ser_response * refresh_access_token_1();
+extern  struct ser_response * refresh_access_token_1_svc();
 extern int oauth_prog_1_freeresult ();
 #endif /* K&R C */
 

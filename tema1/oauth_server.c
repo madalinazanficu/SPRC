@@ -53,3 +53,15 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 
 	return &result;
 }
+
+struct ser_response *
+refresh_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
+{
+	static struct ser_response  result;
+
+	/*
+	 * insert server code here
+	 */
+
+	return &result;
+}

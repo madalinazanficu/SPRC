@@ -68,3 +68,18 @@ validate_delegated_action_1(struct cl_request *argp, CLIENT *clnt)
 	}
 	return (&clnt_res);
 }
+
+struct ser_response *
+refresh_access_token_1(struct cl_request *argp, CLIENT *clnt)
+{
+	static struct ser_response clnt_res;
+
+	memset((char *)&clnt_res, 0, sizeof(clnt_res));
+	if (clnt_call (clnt, refresh_access_token,
+		(xdrproc_t) xdr_cl_request, (caddr_t) argp,
+		(xdrproc_t) xdr_ser_response, (caddr_t) &clnt_res,
+		TIMEOUT) != RPC_SUCCESS) {
+		return (NULL);
+	}
+	return (&clnt_res);
+}
