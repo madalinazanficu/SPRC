@@ -5,23 +5,29 @@
  */
 
 #include "oauth.h"
-#include<string>
-#include<iostream>
-#include<fstream>
-#include<sstream>
-#include<vector>
-#include "helpers_client.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <unordered_map>
 #include <stdlib.h>
+#include <string.h>
 
+/* Based on the input, the client can regenerate the access token or not*/
 std::unordered_map<std::string, bool> user_refresh;
+
+/* Each user may have only one access token associated */
 std::unordered_map<std::string, std::string> access_tok;
+
+/* Each user may have a refresh token associated */
 std::unordered_map<std::string, std::string> refresh_tok;
+
+/* Each user has associated an avialablity for his current access token */
 std::unordered_map<std::string, int> user_ttl;
+
+/* Each user which perform a REQUEST will have associated a users_idx */
 std::unordered_map<std::string, int> users_idx;
-
-std::ofstream out_client;
 int user_index = 0;
-
 
 char *string_to_char(std::string str) {
 	char *cstr = (char *)calloc(str.length() + 1, sizeof(char));
@@ -38,14 +44,10 @@ struct tokken create_empty_token() {
 	return new_token;
 }
 
-struct tokken create_token(int approved,
-							std::string type,
-							std::string initial_value,
-							int ttl = 0) {
+struct tokken create_token(int approved, std::string type,
+							std::string initial_value, int ttl = 0) {
 
 	struct tokken new_token;
-
-
 	new_token.approved = approved;
 	new_token.type = string_to_char(type);
 	new_token.value = string_to_char(initial_value);
@@ -54,10 +56,14 @@ struct tokken create_token(int approved,
 	return new_token;
 }
 
+/* 
+	Responsible for requesting autorization from the server.
+	The client saves the autorization token received from the server.
+	return message: USER_NOT_FOUND / USER_FOUND
+*/
+std::string request_autorization_fun(CLIENT *clnt, std::string user_id,
+										struct tokken &auto_token) {
 
-
-// TODO: get client output from here
-std::string request_autorization_fun(CLIENT *clnt, std::string user_id, struct tokken &auto_token) {
 	struct cl_request  request_autorization_1_arg;
 	struct ser_response  *result_1;
 
@@ -75,7 +81,11 @@ std::string request_autorization_fun(CLIENT *clnt, std::string user_id, struct t
 	return result_1->message;
 }
 
-// TODO: get client output from here
+
+/*
+	Responsible for requesting user approval from the server.
+	The approval is generated based on the user_index in FIFO order.
+*/
 void request_user_approvall(CLIENT *clnt, std::string user_id,
 								struct tokken &auto_token) {
 
@@ -97,9 +107,16 @@ void request_user_approvall(CLIENT *clnt, std::string user_id,
 	users_idx[user_id] = user_index;
 	user_index++;
 
+	// The server may have changed the auto_token
 	auto_token = result_2->auto_token;
 }
 
+
+/*
+	Responsible for requesting access token and refresh token from the server.
+	The access token is generated based on the signed auto_token.
+	The refresh token is optional.
+*/
 void request_access(CLIENT *clnt, std::string user_id,
 						struct tokken auto_token) {
 	struct ser_response  *result_3;
@@ -121,18 +138,22 @@ void request_access(CLIENT *clnt, std::string user_id,
 		clnt_perror (clnt, "call failed");
 	}
 
+	// In this case, the client was not approved
 	if (std::string(result_3->message) == "REQUEST_DENIED") {
 		std::cout << result_3->message << std::endl;
 		return;
 	}
 
-	std::string out_val = result_3->auto_token.value + std::string(" -> ") + result_3->access_token.value;
+	// Print the all tokens generated
+	std::string out_val = result_3->auto_token.value + std::string(" -> ") 
+							+ result_3->access_token.value;
+
 	if (std::string(result_3->refresh_token.value) != "") {
 		out_val += "," + std::string(result_3->refresh_token.value);
 	}
 	std::cout << out_val << std::endl;
 
-	// Store the access, refresh tokens and token availability
+	// Store tokens locally
 	access_tok[user_id] = result_3->access_token.value;
 	refresh_tok[user_id] = result_3->refresh_token.value;
 	user_ttl[user_id] = result_3->access_token.ttl;
@@ -146,15 +167,15 @@ void validate_delegated_action_fun(CLIENT *clnt, std::string client_id,
 	std::string access_token = access_tok[client_id];
 	int ttl = user_ttl[client_id];
 
-	struct cl_request  validate_delegated_action_1_arg;
+	struct cl_request  delegated_action_1_arg;
 	struct ser_response  *result_4;
 
 	// Sever's input (client_id, access_token, command, resource)
-	validate_delegated_action_1_arg.client_id = string_to_char(client_id);
-	validate_delegated_action_1_arg.tokken = create_token(0, "access_token", access_token , ttl);
-	validate_delegated_action_1_arg.info = string_to_char(command + "," + resource);
+	delegated_action_1_arg.client_id = string_to_char(client_id);
+	delegated_action_1_arg.tokken = create_token(0, "access", access_token , ttl);
+	delegated_action_1_arg.info = string_to_char(command + "," + resource);
 
-	result_4 = validate_delegated_action_1(&validate_delegated_action_1_arg, clnt);
+	result_4 = validate_delegated_action_1(&delegated_action_1_arg, clnt);
 	if (result_4 == (struct ser_response *) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
@@ -166,7 +187,7 @@ void process_request_cmd(CLIENT *clnt, std::string client_id,
 							std::string auto_refresh) {
 
 
-	// Does the current user have auto_refresh enabled?
+	// Check if the current user have auto_refresh enabled
 	if (auto_refresh == "1") {
 		user_refresh[client_id] = true;
 	} else {
@@ -178,12 +199,13 @@ void process_request_cmd(CLIENT *clnt, std::string client_id,
 
 	std::string message = request_autorization_fun(clnt, client_id, auto_token);
 	if (message == "USER_NOT_FOUND") {
-		std::cout << "USER_NOT_FOUND" << std::endl;
+		std::cout << message << std::endl;
 		return;
 	}
 
 	// Step2: request user approval
 	request_user_approvall(clnt, client_id, auto_token);
+
 
 	// Step3: request access token and refresh token
 	request_access(clnt, client_id, auto_token);
@@ -230,11 +252,14 @@ void process_other_cmd(CLIENT *clnt, std::string client_id,
 	std::string refresh_token = refresh_tok[client_id];
 	int ttl = user_ttl[client_id];
 
+	// Check if the access token is still valid
 	std::string message = refresh_token_fun(clnt, client_id, command, resource);
 	if (message == "PERMISSION_DENIED" || message == "TOKEN_EXPIRED") {
 		std::cout << message << std::endl;
 		return;
 	}
+
+	// The access token is still valid, so the client can execute the command
 	validate_delegated_action_fun(clnt, client_id, command, resource);
 }
 
@@ -253,8 +278,6 @@ int main (int argc, char *argv[])
 		clnt_pcreateerror (host);
 		exit (1);
 	}
-
-	out_client.open("out_client.txt");
 
 	char *client_file;
 	client_file = argv[2];
@@ -278,8 +301,6 @@ int main (int argc, char *argv[])
 		}
 	}
 
-
-	out_client.close();
 	clnt_destroy (clnt);
 	exit (0);
 }

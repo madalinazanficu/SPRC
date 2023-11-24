@@ -8,12 +8,15 @@
 #include "helpers_server.h"
 #include "token.h"
 
+
 char *string_to_char(std::string str) {
 	char *cstr = (char *)calloc(str.length() + 1, sizeof(char));
 	strcpy(cstr, str.c_str());
 	return cstr;
 }
 
+
+// Create an empty token for the default response
 struct tokken create_empty_token() {
 	struct tokken new_token;
 	new_token.approved = 0;
@@ -23,6 +26,8 @@ struct tokken create_empty_token() {
 	return new_token;
 }
 
+
+// Create a generic token with the given parameters
 struct tokken create_token(int approved,
 							std::string type,
 							std::string initial_value,
@@ -40,7 +45,11 @@ struct tokken create_token(int approved,
 	return new_token;
 }
 
-// TODO: get server output from here
+
+/*
+	The server receives an authorization request from the client.
+	It searches if the user exists in the database.
+*/
 struct ser_response *
 request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
@@ -68,7 +77,13 @@ request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	return &result;
 }
 
-// TODO: get server output from here
+
+/*
+	The server receives an approval request from the client.
+	It uses the permissions parsed from the database and authorizes
+	specific operations for the client.
+*/
+
 struct ser_response *
 request_approve_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
@@ -98,6 +113,7 @@ request_approve_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	return &result;
 }
 
+
 struct ser_response *
 request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
@@ -114,7 +130,8 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	}
 
 	// Generate access token
-	result.access_token = create_token(0, "access_token", argp->tokken.value, token_availability);
+	result.access_token = create_token(0, "access_token", argp->tokken.value,
+										token_availability);
 	access_tokens[argp->client_id] = result.access_token.value;
 	user_ttl[argp->client_id] = result.access_token.ttl;
 	std::cout << "  AccessToken = " << result.access_token.value << std::endl;
@@ -127,7 +144,8 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 
 	// Generate refresh token
 	if (std::string(argp->info) == "REFRESH") {
-		result.refresh_token = create_token(0, "refresh_token", result.access_token.value, token_availability);
+		result.refresh_token = create_token(0, "refresh_token",
+								result.access_token.value, token_availability);
 		refresh_tokens[argp->client_id] = result.refresh_token.value;
 		std::cout << "  RefreshToken = " << result.refresh_token.value << std::endl;
 	} else {
@@ -140,6 +158,11 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	return &result;
 }
 
+
+/*
+	The client wants to execute a command on a resource.
+	The server check if the client has all the permissions to perform.
+*/
 struct ser_response *
 validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
@@ -203,6 +226,12 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	return &result;
 }
 
+
+/*
+	The client may be able to refresh the access token.
+	In this case, the server generates a new access token and
+	a new refresh token.
+*/
 struct ser_response *
 refresh_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
@@ -241,7 +270,7 @@ refresh_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 		return &result;
 	}
 
-	// Check if the TTL of the access token is 0 and we don't have any refresh token
+	// Check refresh condition
 	if (ttl == 0) {
 		if (ref_token == "") {
 			std::cout << error_message << std::endl;
@@ -259,7 +288,7 @@ refresh_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 
 		// Genereate new refresh token
 		struct tokken new_refresh_token = create_token(0, "refresh_token",
-												new_access_token.value, token_availability);
+										new_access_token.value, token_availability);
 		
 	
 		// Save the tokens in the database

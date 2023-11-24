@@ -1,20 +1,20 @@
 #include "helpers_server.h"
 
+
+// Initialize the server's database
 std::unordered_map<std::string, bool> users;
 std::unordered_map<std::string, bool> resources;
 std::vector<std::string> approvals;
-std::unordered_map<std::string, std::unordered_map<std::string, std::string>> token_perm;
-int token_availability;
-std::ofstream out_server;
-
-
-// Each user will have a unique access token in the database
 std::unordered_map<std::string, std::string> access_tokens;
 std::unordered_map<std::string, std::string> refresh_tokens;
 std::unordered_map<std::string, int> user_ttl;
+std::unordered_map<std::string,
+                std::unordered_map<std::string, std::string>> token_perm;
+
+int token_availability;
 
 /*
-    Parse each apprval line from usersApproval.db.
+    Based on the index, parse an approval line and save the permissions
     Split each line by ',' and iterate 2 by 2 words to interpret the permissions.
 */
 std::string parse_permissions(int index,
@@ -39,6 +39,10 @@ std::string parse_permissions(int index,
     return "PERMITTED";
 }
 
+
+/*
+    Read usersIDs.db and save the users id in the database.
+*/
 void read_users_db(char *users_db_file) {
     std::ifstream users_db(users_db_file);
 
@@ -58,6 +62,10 @@ void read_users_db(char *users_db_file) {
     users_db.close();
 }
 
+
+/*
+    Read resources.db and save the resources in the database.
+*/
 void read_resources_db(char *resources_db_file) {
     std::ifstream resources_db(resources_db_file);
 
@@ -77,6 +85,11 @@ void read_resources_db(char *resources_db_file) {
     resources_db.close();
 }
 
+/*
+    Read usersApproval.db and save the users approval responses
+    in the database.
+*/
+
 void read_approvals(char *users_approval_responses) {
     std::ifstream users_approval_db(users_approval_responses);
     
@@ -93,6 +106,10 @@ void read_approvals(char *users_approval_responses) {
     users_approval_db.close();
 }
 
+/*
+    Function called from oauth_svc.cpp to initialize to get input files,
+    from command line arguments.
+*/
 void command_line_arguments_support(int argc, char *argv[]) {
     if (argc < 5) {
         std::cout << "Try to run again with more arguments" << std::endl;
