@@ -38,8 +38,8 @@ char *string_to_char(std::string str) {
 struct tokken create_empty_token() {
 	struct tokken new_token;
 	new_token.approved = 0;
-	new_token.type = "Empty token";
-	new_token.value = "";
+	new_token.type = string_to_char("Empty token");
+	new_token.value = string_to_char("");
 	new_token.ttl = 0;
 	return new_token;
 }

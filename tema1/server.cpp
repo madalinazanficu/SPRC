@@ -20,8 +20,8 @@ char *string_to_char(std::string str) {
 struct tokken create_empty_token() {
 	struct tokken new_token;
 	new_token.approved = 0;
-	new_token.type = "Empty token";
-	new_token.value = "";
+	new_token.type = string_to_char("Empty token");
+	new_token.value = string_to_char("");
 	new_token.ttl = 0;
 	return new_token;
 }
@@ -64,12 +64,12 @@ request_autorization_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	// Search the user in the database
 	std::string user_id = argp->client_id;
 	if (users.find(user_id) == users.end()) {
-		result.message =  "USER_NOT_FOUND";
+		result.message =  string_to_char("USER_NOT_FOUND");
 		return &result;
 	}
 	
 	result.auto_token = create_token(0, "auto_token", user_id, 0);
-	result.message = "USER_FOUND";
+	result.message = string_to_char("USER_FOUND");
 
 
 	std::cout << "  RequestToken = " << result.auto_token.value << std::endl;
@@ -100,7 +100,7 @@ request_approve_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 
 	// No permissions granted
 	if (out == "DENIED") {
-		result.message = "Not approved";
+		result.message = string_to_char("Not approved");
 		result.auto_token = argp->tokken;
 		return &result;
 	}
@@ -108,7 +108,7 @@ request_approve_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	// Permissions granted - sign the token
 	argp->tokken.approved = 1;
 	result.auto_token = argp->tokken;
-	result.message = "Approved";
+	result.message = string_to_char("Approved");
 
 	return &result;
 }
@@ -121,7 +121,7 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 
 	// Check if the autorization token is valid
 	if (argp->tokken.approved == 0) {
-		result.message = "REQUEST_DENIED";
+		result.message = string_to_char("REQUEST_DENIED");
 		result.auto_token = argp->tokken;
 		result.access_token = create_empty_token();
 		result.refresh_token = create_empty_token();
@@ -152,7 +152,7 @@ request_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 		result.refresh_token = create_empty_token();
 	}
 
-	result.message = "ACCESS_GRANTED";
+	result.message = string_to_char("ACCESS_GRANTED");
 	result.auto_token = argp->tokken;
 
 	return &result;
@@ -168,11 +168,10 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 {
 	// Prepare the default response from server
 	static struct ser_response  result;
-	result.message = "VALIDATE_DELEGATED_ACTION";
 	result.auto_token = create_empty_token();
 	result.access_token = create_empty_token();
 	result.refresh_token = create_empty_token();
-	result.message = "";
+	result.message = string_to_char("");
 
 	// Extract access token, user_id, resource and command from request
 	std::string user_id = argp->client_id;
@@ -200,7 +199,7 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	// The resource is not available in the database
 	if (resources.find(resource) == resources.end()) {
 		std::cout << error_message << std::endl;
-		result.message = "RESOURCE_NOT_FOUND";
+		result.message = string_to_char("RESOURCE_NOT_FOUND");
 		return &result;
 	}
 
@@ -215,14 +214,14 @@ validate_delegated_action_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 
 	if (found == false) {
 		std::cout << error_message << std::endl;
-		result.message = "OPERATION_NOT_PERMITTED";
+		result.message = string_to_char("OPERATION_NOT_PERMITTED");
 		return &result;
 	}
 
 	std::cout << "PERMIT (" << command << "," << resource << ","
 				<< acc_token  << "," << ttl << ")" << std::endl;
 
-	result.message = "PERMISSION_GRANTED";
+	result.message = string_to_char("PERMISSION_GRANTED");
 	return &result;
 }
 
@@ -238,7 +237,7 @@ refresh_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	
 	// Default response
 	static struct ser_response  result;
-	result.message = "";
+	result.message = string_to_char("");
 	result.auto_token = create_empty_token();
 	result.access_token = create_empty_token();
 	result.refresh_token = create_empty_token();
@@ -266,7 +265,7 @@ refresh_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	// Check if the access token is valid
 	if (acc_token == "") {
 		std::cout << error_message << std::endl;
-		result.message = "PERMISSION_DENIED";
+		result.message = string_to_char("PERMISSION_DENIED");
 		return &result;
 	}
 
@@ -274,7 +273,7 @@ refresh_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 	if (ttl == 0) {
 		if (ref_token == "") {
 			std::cout << error_message << std::endl;
-			result.message = "TOKEN_EXPIRED";
+			result.message = string_to_char("TOKEN_EXPIRED");
 			return &result;
 		}
 
@@ -297,7 +296,7 @@ refresh_access_token_1_svc(struct cl_request *argp, struct svc_req *rqstp)
 		user_ttl[argp->client_id] = new_access_token.ttl;
 
 		// Return the response to the client
-		result.message = "TOKEN_REFRESHED";
+		result.message = string_to_char("TOKEN_REFRESHED");
 		result.access_token = new_access_token;
 		result.refresh_token = new_refresh_token;
 
