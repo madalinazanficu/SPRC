@@ -2,14 +2,14 @@ FROM python:3.8
 
 
 # Copy the requirments file and install deps
-COPY requirements.txt .
+COPY /server/requirements.txt .
 RUN pip install -r requirements.txt
 
 # Set the working directory inside the container
 WORKDIR /server
 
 # Copy the source code into the container
-COPY app.py .
+COPY /server/app.py .
 
 # Expose the port that the Flask app runs on
 EXPOSE 6000

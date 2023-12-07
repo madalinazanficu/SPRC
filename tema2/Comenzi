@@ -1,0 +1,12 @@
+Comenzi:
+
+Containere active: sudo  docker ps 
+Containere: sudo docker ps -active
+
+Rulare docker:
+1. Build: sudo docker build -t my-flask-app .
+2. Run:  sudo docker run -p 6000:6000 my-flask-app
+
+Rulare docker compose:
+1. docker-compose -f ./docker-compose up
+2. docker-compose -f ./docker-compose down
