@@ -9,3 +9,51 @@ services:
       restart: always
       ports:
         - "6000:6000"
+      depends_on:
+        - mongo
+      networks:
+        - rest_api
+
+  mongo:
+      image: mongo:latest
+      hostname: mongo
+      container_name: mongo
+      volumes:
+        - mongo_data:/data/db
+      restart: always
+      environment:
+        MONGO_INITDB_ROOT_USERNAME: admin
+        MONGO_INITDB_ROOT_PASSWORD: admin
+        MONGO_INITDB_DATABASE: mongo
+        MONGO_DATA_DIR: /data/db
+      networks:
+        - rest_api
+        - mongo-network
+      ports:
+        - "27017:27017"
+
+  # mongo-gui:
+  #   image: mongo-express:latest
+  #   container_name: mongo-gui
+  #   restart: always
+  #   depends_on:
+  #     - mongo
+  #   ports:
+  #     - "8081:8081"
+  #   environment:
+  #     ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongo:27017/
+  #     ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+  #     ME_CONFIG_MONGODB_ADMINPASSWORD: admin
+  #     ME_CONFIG_MONGODB_SERVER: mongo
+  #   networks:
+  #     - mongo-network
+
+volumes:
+  mongo_data: {}
+  db_data : {}
+
+networks:
+  rest_api:
+    name: rest_api
+  mongo-network:
+    name: mongo-network

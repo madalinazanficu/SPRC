@@ -1,2 +1,7 @@
 Flask
 pymongo
+mongoengine
+Flask-SQLAlchemy
+SQLAlchemy
+mysqlclient
+mysql-connector-python
