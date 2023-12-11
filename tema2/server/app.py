@@ -386,6 +386,37 @@ def get_temperatures():
     return json.dumps(response), 200
 
 
+
+@app.route('/api/temperatures/<id_oras>', methods=['GET'])
+def get_temperatures_city(id_oras):
+    start_date = request.args.get('from')
+    end_date = request.args.get('until')
+    
+    query = Q()
+    orase = Orase.objects(pk=id_oras)
+    query = query & Q(id_oras__in=orase)
+    
+    if start_date:
+        start_date = datetime.fromisoformat(start_date)
+        query = query & Q(timestamp__gte=start_date)
+    
+    if end_date:
+        end_date = datetime.fromisoformat(end_date)
+        query = query & Q(timestamp__lte=end_date)
+        
+    temps = Temperaturi.objects(query)
+    response = []
+    for temp in temps:
+        response.append(
+            {
+                "id": temp.pk.__str__(),
+                "valoare": temp.valoare,
+                "timestamp": str(temp.timestamp)
+            }
+        )       
+    return json.dumps(response), 200
+
+
 # ------------- Definire rute
 @app.route('/')
 def view_temo():
