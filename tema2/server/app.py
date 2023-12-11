@@ -451,30 +451,30 @@ def get_temperatures_country(id_tara):
 
 @app.route('/api/temperatures/<id>', methods=['PUT'])
 def put_temperature(id):
-    request = request.get_json()
+    payload = request.get_json()
     if (
-        'id' not in request or
-        'idOras' not in request or
-        'valoare' not in request
+        'id' not in payload or
+        'idOras' not in payload or
+        'valoare' not in payload
     ):
         return '', 400
     
     if (
-        type(request['valoare']) == None or
-        type(request['valoare']) == str
+        type(payload['valoare']) == None or
+        type(payload['valoare']) == str
     ):
         return '', 400
     
     try:
         temp = Temperaturi.objects(pk=id).get()
-        oras = Orase.objects(pk=request['idOras']).get()
+        oras = Orase.objects(pk=payload['idOras']).get()
     except:
         return '', 404
     
     
     try:
         temp.id_oras = oras
-        temp.valoare = request['valoare']
+        temp.valoare = payload['valoare']
         temp.save()
         response = {
             "id": temp.pk.__str__()
