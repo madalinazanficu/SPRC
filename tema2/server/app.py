@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request
 from pymongo import MongoClient
 import mongoengine
@@ -7,30 +8,28 @@ import json
 from datetime import datetime
 from mongoengine.queryset.visitor import Q
 
-
-# Request codes:
+# Responses codes:
 #     200 - OK
 #     201 - Created
 #     400 - Bad Request
 #     404 - Not Found
 #     409 - Conflict - NonUniqueError
-#     docker system prune -a --volumes  
 
 def connect_to_database():
     try:
-        client = MongoClient(host='mongo',
+        client = MongoClient(host=os.environ['DB_NAME'],
                              port=27017,
-                             username='admin',
-                             password='admin',
+                             username=os.environ['USERNAME_DB'],
+                             password=os.environ['PASSWORD_DB'],
                              authSource='admin')
 
-        db = client['mongo']
+        db = client[os.environ['DB_NAME']]
 
         connect(
-            db='mongo',
-            host='mongo',
-            username='admin',
-            password='admin',
+            db=os.environ['DB_NAME'],
+            host=os.environ['DB_NAME'],
+            username=os.environ['USERNAME_DB'],
+            password=os.environ['PASSWORD_DB'],
             authentication_source='admin'
         )
         return db
@@ -44,6 +43,8 @@ def connect_to_database():
 app = Flask(__name__)
 
 
+
+
 # ------------ Autentificare la baza de date
 database_connection = connect_to_database()
 if database_connection is None:
@@ -54,7 +55,11 @@ else:
 
 
 def check_payload_country(payload):
-    if 'nume' not in payload or 'lat' not in payload or 'lon' not in payload:
+    if (
+        'nume' not in payload or
+        'lat' not in payload or
+        'lon' not in payload
+    ):
         return False
 
     if (
@@ -179,6 +184,8 @@ def put_country(id):
 
     except:
         return '', 400
+
+
 
 
 # ------------- Rute city
@@ -315,6 +322,7 @@ def delete_city(id):
         return '', 400
 
 
+
 # ------------- Rute temperature
 @app.route('/api/temperatures', methods=['POST'])
 def post_temperature():
@@ -354,7 +362,10 @@ def get_temperatures():
     start_date = request.args.get('from')
     end_date = request.args.get('until')
 
+    # Formez query-ul in functie de parametrii primiti
     query = Q()
+
+    # Se aleg orasele in functie de latitudine si longitudine
     if lat:
         lat = float(lat)
         orase = Orase.objects(latitudine=lat)
@@ -365,6 +376,7 @@ def get_temperatures():
         orase = Orase.objects(longitudine=lon)
         query = query & Q(id_oras__in=orase)
 
+    # Se aleg temperaturile in functie de start_date si end_date
     if start_date:
         start_date = datetime.fromisoformat(start_date)
         query = query & Q(timestamp__gte=start_date)
@@ -393,10 +405,12 @@ def get_temperatures_city(id_oras):
     start_date = request.args.get('from')
     end_date = request.args.get('until')
     
+    # Selectez orasele in functie de id_oras
     query = Q()
     orase = Orase.objects(pk=id_oras)
     query = query & Q(id_oras__in=orase)
     
+    # Selectez temperaturile in functie de start_date si end_date
     if start_date:
         start_date = datetime.fromisoformat(start_date)
         query = query & Q(timestamp__gte=start_date)
@@ -502,24 +516,10 @@ def delete_temperature(id):
 
 # ------------- Definire rute
 @app.route('/')
-def view_temo():
-    timestamp1 = datetime.now().__str__()
-    time = datetime.fromisoformat(timestamp1)
-    
-    return "Hello World!" + str(time) + "\n" + str(timestamp1)
-
-# def hello_world():
-#     tara = Tari(nume_tara="dadada", latitudine=45.9432, longitudine=24.9668)
-#     try:
-#         tara.save()
-#         return "Inserted into database!" + str(tara.nume_tara)
-
-#     except mongoengine.errors.ValidationError as e:
-#         return "Error Validation Error!"
-
-#     except mongoengine.errors.NotUniqueError as e:
-#         return "Error Not Unique Error!"
+def hello_world(): 
+    return "Hello World!"
 
 
+# ------------- Pornire server Flask
 if __name__ == '__main__':
     app.run('0.0.0.0', port=6000, debug=True)

@@ -16,7 +16,6 @@ class Orase(Document):
     meta = {
         'indexes': [{'fields': ['id_tara', 'nume_oras'], 'unique': True}]
     }
-    
 
 class Temperaturi(Document):
     id_oras = ReferenceField(Orase, required=True, reverse_delete_rule=CASCADE)
