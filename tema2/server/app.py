@@ -43,6 +43,7 @@ def connect_to_database():
 # ------------- Definire aplicatie Flask
 app = Flask(__name__)
 
+
 # ------------ Autentificare la baza de date
 database_connection = connect_to_database()
 if database_connection is None:
@@ -387,7 +388,7 @@ def get_temperatures():
 
 
 
-@app.route('/api/temperatures/<id_oras>', methods=['GET'])
+@app.route('/api/temperatures/cities/<id_oras>', methods=['GET'])
 def get_temperatures_city(id_oras):
     start_date = request.args.get('from')
     end_date = request.args.get('until')
@@ -416,6 +417,88 @@ def get_temperatures_city(id_oras):
         )       
     return json.dumps(response), 200
 
+
+@app.route('/api/temperatures/countries/<id_tara>', methods=['GET'])
+def get_temperatures_country(id_tara):
+    start_date = request.args.get('from')
+    end_date = request.args.get('until')
+    
+    query = Q()
+    tara = Tari.objects(pk=id_tara)
+    orase = Orase.objects(id_tara__in=tara)
+    query = query & Q(id_oras__in=orase)
+    
+    if start_date:
+        start_date = datetime.fromisoformat(start_date)
+        query = query & Q(timestamp__gte=start_date)
+        
+    if end_date:
+        end_date = datetime.fromisoformat(end_date)
+        query = query & Q(timestamp__lte=end_date)
+        
+    temps = Temperaturi.objects(query)
+    response = []
+    for temp in temps:
+        response.append(
+            {
+                "id": temp.pk.__str__(),
+                "valoare": temp.valoare,
+                "timestamp": str(temp.timestamp)
+            }
+        )
+    return json.dumps(response), 200
+
+
+@app.route('/api/temperatures/<id>', methods=['PUT'])
+def put_temperature(id):
+    request = request.get_json()
+    if (
+        'id' not in request or
+        'idOras' not in request or
+        'valoare' not in request
+    ):
+        return '', 400
+    
+    if (
+        type(request['valoare']) == None or
+        type(request['valoare']) == str
+    ):
+        return '', 400
+    
+    try:
+        temp = Temperaturi.objects(pk=id).get()
+        oras = Orase.objects(pk=request['idOras']).get()
+    except:
+        return '', 404
+    
+    
+    try:
+        temp.id_oras = oras
+        temp.valoare = request['valoare']
+        temp.save()
+        response = {
+            "id": temp.pk.__str__()
+        }
+        return json.dumps(response), 200
+    except mongoengine.errors.NotUniqueError as e:
+        return '', 409
+    
+
+@app.route('/api/temperatures/<id>', methods=['DELETE'])
+def delete_temperature(id):
+    try:
+        temp = Temperaturi.objects(pk=id).get()
+    except:
+        return '', 404
+    
+    try:
+        temp.delete()
+        response = {
+            "id": temp.pk.__str__()
+        }
+        return json.dumps(response), 200
+    except:
+        return '', 400
 
 # ------------- Definire rute
 @app.route('/')
