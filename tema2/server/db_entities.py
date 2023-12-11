@@ -1,5 +1,5 @@
 import mongoengine
-from mongoengine import Document, StringField, IntField, FloatField, ReferenceField, CASCADE
+from mongoengine import Document, StringField, IntField, FloatField, ReferenceField, CASCADE, DateTimeField
 
 class Tari(Document):
     nume_tara = StringField(required=True, unique=True)
@@ -21,7 +21,7 @@ class Orase(Document):
 class Temperaturi(Document):
     id_oras = ReferenceField(Orase, required=True, reverse_delete_rule=CASCADE)
     valoare = FloatField(required=True)
-    timestamp = StringField(required=True)
+    timestamp = DateTimeField(required=True)
     
     meta = {
         'indexes': [{'fields': ['id_oras', 'timestamp'], 'unique': True}]
