@@ -1,0 +1,12 @@
+Comenzi:
+
+Containere active: sudo  docker ps 
+Containere: sudo docker ps -active
+
+Rulare docker:
+Build: sudo docker build -t app -f Dockerfile .
+Run:  sudo docker run -p 1833:1833 app
+
+Rulare docker compose:
+docker-compose -f ./docker-compose up --build
+docker-compose -f ./docker-compose down
