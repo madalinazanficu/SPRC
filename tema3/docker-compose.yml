@@ -21,7 +21,24 @@ services:
       - mqtt-broker
     networks:
       - broker-adapter
+
+  influxdb:
+    image: influxdb:1.7.10
+    container_name: influxdb
+    ports:
+      - 8086:8086
+    restart: always
+    volumes:
+      - database:/data/influxdb
+    networks:
+      - influxdb-adapter
     
+  
 networks:
   broker-adapter:
     name: broker_adapter
+  influxdb-adapter:
+    name: influxdb_adapter
+
+volumes:
+  database: {}
