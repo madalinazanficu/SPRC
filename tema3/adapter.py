@@ -4,7 +4,9 @@ import re
 import json
 import influxdb_client
 from influxdb_client.client.write_api import SYNCHRONOUS
+from influxdb import InfluxDBClient
 
+db_client = InfluxDBClient(host="influxdb", port=8086)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -40,23 +42,30 @@ def on_message(client, userdata, msg):
     for key, value in payload.items():
         if type(value) == int or type(value) == float:
             measurement = location + "." + station + "." + key
-            print("Measurement: " + measurement)
             point = influxdb_client.Point(measurement) \
                         .tag("location", location) \
                         .tag("station", station) \
                         .field("value", value) \
                         .time(timestamp)
             
-            print("Crapa dupa point")
+            print("Writing to InfluxDB...")
             write_api = db_client.write_api(write_options=SYNCHRONOUS)
             write_api.write(bucket="weather_station", record=point)
-            print("Crapa dupa write")
+            print("Done writing to InfluxDB")
+            
             print(measurement + " -> " + str(value) + " at " + timestamp)
     
 
 
 if __name__ == "__main__":
-    # Create the mqtt client (which listens for messages) and set the callbacks
+
+    # Create the influxdb client - using InfluxDB 1.x in order to avoid autehntication
+    db_client.create_database("weather_station")
+    
+    # db_client.create_database("weather_station")
+    print("Created InfluxDB database")
+
+    # Create the mqtt client (which listens for messages)
     mqtt_client = mqtt.Client()
     mqtt_client.on_connect = on_connect
     mqtt_client.on_message = on_message
@@ -64,6 +73,3 @@ if __name__ == "__main__":
     mqtt_client.connect("mqtt-broker", 1883, 60)
     mqtt_client.loop_forever()
 
-    # Create the influxdb client - using InfluxDB 1.x in order to avoid autehntication
-    db_client = influxdb_client.InfluxDBClient(host="influxdb", port=8086)
-    db_client.create_database("weather_station")
