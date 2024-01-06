@@ -1,51 +1,43 @@
-from json import dumps, load
-from numpy import arange
-from random import choice
-from sys import stdin
-from time import sleep
-
 import paho.mqtt.client as mqtt
+import json
+from random import choice
 
-
-def _create_connection():
-	client = mqtt.Client()
-	client.connect("mqtt.eclipseprojects.io", 1883, 60)
-	client.loop_start()
-
-	return client
-
-
-def _close_connection(client):
-	client.disconnect()
-	client.loop_stop()
-
+BATS = [99, 18, 117]
+HUMIDS = [40, 200, 19]
+TMPS = [25.3, 27.5, 23.1]
+ALARMS = [0, 13, 2]
+AQIS = [12, 20, 32]
+RSSIS = [1500, 2023, 2051]
+NUM_TOPICS = 100
 
 def main():
-	client = _create_connection()
-
-	batts = list(range(90, 101))
-	temps = list(range(20, 31))
-	humids = list(range(30, 41))
-	secs = list(arange(0.5, 1.6, 0.1))
-	stations = ['A', 'B', 'C']
-
-	while True:
-		iot_data = {
-			'BAT': choice(batts),
-			'TEMP': choice(temps),
-			'HUMID': choice(humids),
-		}
-
-		station = choice(stations)
-		client.publish('UPB/' + station, dumps(iot_data))
-		# print(f"Station {station} published:\n{dumps(iot_data, indent=4)}\n")
-		print(station)
-		print(dumps(iot_data, indent=4))
-
-		sleep(choice(secs))
-
-	_close_connection(client)
+    client = mqtt.Client()
+    client.connect("localhost")
+    client.loop_start()
 
 
-if __name__ == "__main__":
-	main()
+    for _ in range(NUM_TOPICS):
+        payload1 = {
+            "BAT" : choice(BATS),
+            "HUMID" : choice(HUMIDS),
+            "PRJ" : "SPRC",
+            "TMP" : choice(TMPS),
+            "status" : "OK",
+            "timestamp" : "2019−11−26T03 :54:20+03:00"
+        }
+
+        client.publish('UPB/RPi_1', json.dumps(payload1))
+
+        payload2 = {
+            "Alarm": choice(ALARMS),
+            "AQI": choice(AQIS),
+            "RSSI": choice(RSSIS)
+        }
+
+        client.publish('UPB/ZEUS', json.dumps(payload2))
+
+    client.disconnect()
+    client.loop_stop()
+
+if __name__ == '__main__':
+    main()
