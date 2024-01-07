@@ -10,3 +10,6 @@ Run:  sudo docker run -p 1833:1833 app
 Rulare docker compose:
 docker-compose -f ./docker-compose up --build
 docker-compose -f ./docker-compose down
+
+https://www.influxdata.com/blog/getting-started-python-influxdb/
+https://www.influxdata.com/blog/start-python-influxdb/

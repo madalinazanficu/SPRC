@@ -3,10 +3,31 @@ import time
 import re
 import json
 import influxdb_client
-from influxdb_client.client.write_api import SYNCHRONOUS
+from influxdb_client.client.write_api import  SYNCHRONOUS, ASYNCHRONOUS
 from influxdb import InfluxDBClient
+from datetime import datetime
 
 db_client = InfluxDBClient(host="influxdb", port=8086)
+
+
+# Each measurment will be registered as a time series in InfluxDB
+# The series can be identified by the following by location and station tags
+def format_json_data(key, value, location, station, timestamp):
+    return [
+        {
+            "measurement": location + "." + station + "." + key,
+            "tags" : {
+                "location" : location,
+                "station" : station
+            },
+            "fields": {
+                "value" : value
+            },
+            "timestamp" : timestamp
+        }
+    ]
+
+
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -19,41 +40,36 @@ def on_connect(client, userdata, flags, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
 
+    global db_client
+
     # The topic should respect the format: <location>/<station>
     pattern = r'^[^/]+/[^/]+$'
     if re.match(pattern, msg.topic) == False:
         return
     print("Received a message by topic [" + msg.topic + "]")
 
-
     # Extract entities from the topic and payload
     location = msg.topic.split("/")[0]
     station = msg.topic.split("/")[1]
     payload = json.loads(msg.payload.decode())
 
-
     # Check if payload contains timestamp or generate it
     if "timestamp" not in payload:
-        timestamp = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        timestamp = datetime.now().strftime('%Y-%M-%d %H:%M:%S')
+        print("Data timestamp is NOW")
     else:
         timestamp = payload["timestamp"]
+        print("Data timestamp is: " + timestamp)
 
     # Create a time series for each numeric entry in the payload
     for key, value in payload.items():
         if type(value) == int or type(value) == float:
-            measurement = location + "." + station + "." + key
-            point = influxdb_client.Point(measurement) \
-                        .tag("location", location) \
-                        .tag("station", station) \
-                        .field("value", value) \
-                        .time(timestamp)
-            
-            print("Writing to InfluxDB...")
-            write_api = db_client.write_api(write_options=SYNCHRONOUS)
-            write_api.write(bucket="weather_station", record=point)
-            print("Done writing to InfluxDB")
-            
-            print(measurement + " -> " + str(value) + " at " + timestamp)
+            data = format_json_data(key, value, location, station, timestamp)
+            try:
+                db_client.write_points(data, database="weather_station")
+                print("Done writing to InfluxDB")
+            except:
+                print("Error writing to InfluxDB")
     
 
 
