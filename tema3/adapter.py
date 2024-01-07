@@ -2,13 +2,12 @@ import paho.mqtt.client as mqtt
 import time
 import re
 import json
-import influxdb_client
-from influxdb_client.client.write_api import  SYNCHRONOUS, ASYNCHRONOUS
+import os
+import logging
 from influxdb import InfluxDBClient
 from datetime import datetime
 
-db_client = InfluxDBClient(host="influxdb", port=8086)
-
+db_client = None
 
 # Each measurment will be registered as a time series in InfluxDB
 # The series can be identified by the following by location and station tags
@@ -28,10 +27,9 @@ def format_json_data(key, value, location, station, timestamp):
     ]
 
 
-
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
-    print("Connected with result code " + str(rc))
+    logging.debug("Connected with result code " + str(rc))
 
     # Adapter should recevive messages from all stations
     client.subscribe("#")
@@ -46,7 +44,7 @@ def on_message(client, userdata, msg):
     pattern = r'^[^/]+/[^/]+$'
     if re.match(pattern, msg.topic) == False:
         return
-    print("Received a message by topic [" + msg.topic + "]")
+    logging.debug("Received a message by topic [" + msg.topic + "]")
 
     # Extract entities from the topic and payload
     location = msg.topic.split("/")[0]
@@ -56,10 +54,11 @@ def on_message(client, userdata, msg):
     # Check if payload contains timestamp or generate it
     if "timestamp" not in payload:
         timestamp = datetime.now().strftime('%Y-%M-%d %H:%M:%S')
-        print("Data timestamp is NOW")
+        logging.debug("Data timestamp is NOW")
     else:
         timestamp = payload["timestamp"]
-        print("Data timestamp is: " + timestamp)
+        logging.debug("Data timestamp is: " + timestamp)
+
 
     # Create a time series for each numeric entry in the payload
     for key, value in payload.items():
@@ -67,21 +66,27 @@ def on_message(client, userdata, msg):
             data = format_json_data(key, value, location, station, timestamp)
             try:
                 db_client.write_points(data, database="weather_station")
-                print("Done writing to InfluxDB")
+                measurement = location + "." + station + "." + key
+                logging.debug(measurement + " " + str(value) + " " + timestamp)
             except:
-                print("Error writing to InfluxDB")
+                logging.error("Failed to write data to InfluxDB")
     
 
 
 if __name__ == "__main__":
 
-    # Create the influxdb client - using InfluxDB 1.x in order to avoid autehntication
-    db_client.create_database("weather_station")
+    # Configure logging in debug mode
+    active_debug = os.getenv("DEBUG_DATA_FLOW", "false")
+    if active_debug == "true":
+        logging.basicConfig(level=logging.DEBUG)
+        logging.debug("Debug mode is active")
     
-    # db_client.create_database("weather_station")
-    print("Created InfluxDB database")
+    # Create the influxdb client - using InfluxDB 1.x in order to avoid autehntication
+    db_client = InfluxDBClient(host="influxdb", port=8086)
+    db_client.create_database("weather_station")
+    logging.debug("Connected to InfluxDB")
 
-    # Create the mqtt client (which listens for messages)
+    # Create the MQTT client (which listens for messages)
     mqtt_client = mqtt.Client()
     mqtt_client.on_connect = on_connect
     mqtt_client.on_message = on_message

@@ -22,6 +22,8 @@ services:
     networks:
       - broker-adapter
       - influxdb-adapter
+    environment:
+      - DEBUG_DATA_FLOW=false
 
   influxdb:
     image: influxdb:1.8.0
