@@ -51,6 +51,9 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=grafanaSPRC
     volumes:
       - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - grafana:/var/lib/grafana
+
 
 networks:
   broker-adapter:
@@ -62,3 +65,4 @@ networks:
 
 volumes:
   database: {}
+  grafana: {}

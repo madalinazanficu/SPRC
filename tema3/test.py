@@ -3,9 +3,9 @@ import json
 from random import choice
 
 BATS = [99, 18, 117]
-HUMIDS = [40, 200, 19]
+HUMIDS = [1000, 5000, 7000]
 TMPS = [25.3, 27.5, 23.1]
-ALARMS = [0, 13, 2]
+ALARMS = [700, 1300, 2000]
 AQIS = [12, 20, 32]
 RSSIS = [1500, 2023, 2051]
 NUM_TOPICS = 100
