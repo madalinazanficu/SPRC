@@ -29,7 +29,7 @@ def format_json_data(key, value, location, station, timestamp):
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
-    logging.debug("Connected with result code " + str(rc))
+    # logging.debug("Connected with result code " + str(rc))
 
     # Adapter should recevive messages from all stations
     client.subscribe("#")
@@ -84,6 +84,7 @@ if __name__ == "__main__":
     # Create the influxdb client - using InfluxDB 1.x in order to avoid autehntication
     db_client = InfluxDBClient(host="influxdb", port=8086)
     db_client.create_database("weather_station")
+    db_client.switch_database("weather_station")
     logging.debug("Connected to InfluxDB")
 
     # Create the MQTT client (which listens for messages)

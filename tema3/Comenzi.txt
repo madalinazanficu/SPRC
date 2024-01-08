@@ -13,3 +13,4 @@ docker-compose -f ./docker-compose down
 
 https://www.influxdata.com/blog/getting-started-python-influxdb/
 https://www.influxdata.com/blog/start-python-influxdb/
+https://grafana.com/docs/grafana/latest/administration/provisioning/

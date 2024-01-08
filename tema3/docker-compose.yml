@@ -23,7 +23,7 @@ services:
       - broker-adapter
       - influxdb-adapter
     environment:
-      - DEBUG_DATA_FLOW=false
+      - DEBUG_DATA_FLOW=true
 
   influxdb:
     image: influxdb:1.8.0
@@ -35,13 +35,30 @@ services:
       - database:/data/influxdb
     networks:
       - influxdb-adapter
-    
-  
+      - influxdb-grafana
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    depends_on:
+      - influxdb
+    ports:
+      - 80:3000
+    networks:
+      - influxdb-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=asistent
+      - GF_SECURITY_ADMIN_PASSWORD=grafanaSPRC
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+
 networks:
   broker-adapter:
     name: broker_adapter
   influxdb-adapter:
     name: influxdb_adapter
+  influxdb-grafana:
+    name: influxdb_grafana
 
 volumes:
   database: {}
