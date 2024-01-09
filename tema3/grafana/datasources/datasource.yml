@@ -24,7 +24,7 @@ datasources:
     # <string> Sets a custom UID to reference this
     # data source in other parts of the configuration.
     # If not specified, Grafana generates one.
-    uid: my_unique_uid
+    uid: 123456
     # <string> Sets the data source's URL, including the
     # port.
     url: http://influxdb:8086
@@ -68,4 +68,4 @@ datasources:
     version: 1
     # <bool> Allows users to edit data sources from the
     # Grafana UI.
-    editable: false
+    editable: true

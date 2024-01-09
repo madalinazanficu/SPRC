@@ -18,14 +18,13 @@
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 0,
-    "id": 1,
     "links": [],
     "liveNow": false,
     "panels": [
       {
         "datasource": {
           "type": "influxdb",
-          "uid": "my_unique_uid"
+          "uid": "123456"
         },
         "fieldConfig": {
           "defaults": {
@@ -109,7 +108,7 @@
           {
             "datasource": {
               "type": "influxdb",
-              "uid": "my_unique_uid"
+              "uid": "123456"
             },
             "groupBy": [
               {
@@ -184,7 +183,7 @@
       {
         "datasource": {
           "type": "influxdb",
-          "uid": "my_unique_uid"
+          "uid": "123456"
         },
         "fieldConfig": {
           "defaults": {
@@ -239,7 +238,7 @@
           {
             "datasource": {
               "type": "influxdb",
-              "uid": "my_unique_uid"
+              "uid": "123456"
             },
             "groupBy": [
               {
@@ -339,7 +338,7 @@
           },
           "datasource": {
             "type": "influxdb",
-            "uid": "my_unique_uid"
+            "uid": "123456"
           },
           "definition": "SHOW MEASUREMENTS",
           "hide": 0,

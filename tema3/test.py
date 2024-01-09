@@ -35,6 +35,7 @@ def main():
         }
 
         client.publish('UPB/ZEUS', json.dumps(payload2))
+        client.publish('UPB/ZEUS', json.dumps(payload1))
 
     client.disconnect()
     client.loop_stop()
