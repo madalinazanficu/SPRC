@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 import json
 from random import choice
 
-BATS = [99, 18, 117]
+BATS = [990, 108, 1107]
 HUMIDS = [1000, 5000, 7000]
 TMPS = [25.3, 27.5, 23.1]
 ALARMS = [700, 1300, 2000]
