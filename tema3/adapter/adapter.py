@@ -84,7 +84,6 @@ if __name__ == "__main__":
     # Create the influxdb client - using InfluxDB 1.x in order to avoid autehntication
     db_client = InfluxDBClient(host="influxdb", port=8086)
     db_client.create_database("weather_station")
-    db_client.switch_database("weather_station")
     logging.info("Connected to InfluxDB")
 
     # Create the MQTT client (which listens for messages)
