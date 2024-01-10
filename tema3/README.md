@@ -22,6 +22,10 @@ d. **Grafana** is responsible for monitoring data from InfluxDB.
 To ensure data persistence, I've defined 'grafana-vol'. Moreover, datasources and dashboards are uploaded at startup. 
 I utilized YAML files from https://grafana.com/docs/grafana/latest/administration/provisioning/ for this configuration.
 
+For communication between containers, I have created 3 networks:
+So, the adapter communicates only with the database(via **influxdb-adapter**) and MQTT broker(via **broker-adapter** network)
+And grafana communicates with database only via **influxdb-grafana** network.
+
 2. InfluxDB Schema:
 This video helped me understand how time series work: https://www.youtube.com/watch?v=J4syKnsqQmg
 
