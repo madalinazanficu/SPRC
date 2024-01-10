@@ -29,7 +29,7 @@ def format_json_data(key, value, location, station, timestamp):
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
-    # logging.debug("Connected with result code " + str(rc))
+    logging.info("Connected with result code " + str(rc))
 
     # Adapter should recevive messages from all stations
     client.subscribe("#")
@@ -44,7 +44,7 @@ def on_message(client, userdata, msg):
     pattern = r'^[^/]+/[^/]+$'
     if re.match(pattern, msg.topic) == False:
         return
-    logging.debug("Received a message by topic [" + msg.topic + "]")
+    logging.info("Received a message by topic [" + msg.topic + "]")
 
     # Extract entities from the topic and payload
     location = msg.topic.split("/")[0]
@@ -54,10 +54,10 @@ def on_message(client, userdata, msg):
     # Check if payload contains timestamp or generate it
     if "timestamp" not in payload:
         timestamp = datetime.now().strftime('%Y-%M-%d %H:%M:%S')
-        logging.debug("Data timestamp is NOW")
+        logging.info("Data timestamp is NOW")
     else:
         timestamp = payload["timestamp"]
-        logging.debug("Data timestamp is: " + timestamp)
+        logging.info("Data timestamp is: " + timestamp)
 
 
     # Create a time series for each numeric entry in the payload
@@ -67,7 +67,7 @@ def on_message(client, userdata, msg):
             try:
                 db_client.write_points(data, database="weather_station")
                 measurement = location + "." + station + "." + key
-                logging.debug(measurement + " " + str(value) + " " + timestamp)
+                logging.info(measurement + " " + str(value) + " " + timestamp)
             except:
                 logging.error("Failed to write data to InfluxDB")
     
@@ -78,14 +78,14 @@ if __name__ == "__main__":
     # Configure logging in debug mode
     active_debug = os.getenv("DEBUG_DATA_FLOW", "false")
     if active_debug == "true":
-        logging.basicConfig(level=logging.DEBUG)
-        logging.debug("Debug mode is active")
+        logging.basicConfig(level=logging.INFO)
+        logging.info("Debug mode is active")
     
     # Create the influxdb client - using InfluxDB 1.x in order to avoid autehntication
     db_client = InfluxDBClient(host="influxdb", port=8086)
     db_client.create_database("weather_station")
     db_client.switch_database("weather_station")
-    logging.debug("Connected to InfluxDB")
+    logging.info("Connected to InfluxDB")
 
     # Create the MQTT client (which listens for messages)
     mqtt_client = mqtt.Client()

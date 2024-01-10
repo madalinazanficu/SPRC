@@ -8,7 +8,7 @@ services:
       - 1883:1883
     restart: always
     volumes:
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mqtt-broker/mosquitto.conf:/mosquitto/config/mosquitto.conf
     networks:
       - broker-adapter
 
@@ -16,7 +16,7 @@ services:
     image: adapter
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./adapter/Dockerfile
     container_name: adapter
     depends_on:
       - mqtt-broker
