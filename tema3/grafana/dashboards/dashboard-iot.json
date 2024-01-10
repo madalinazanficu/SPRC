@@ -37,9 +37,10 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMin": 0,
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 7,
+            "fillOpacity": 15,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -48,8 +49,11 @@
             },
             "insertNulls": false,
             "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
             "lineWidth": 1,
-            "pointSize": 5,
+            "pointSize": 1,
             "scaleDistribution": {
               "type": "linear"
             },
@@ -63,18 +67,7 @@
               "mode": "off"
             }
           },
-          "mappings": [
-            {
-              "options": {
-                "pattern": "\\w+\\.(\\w+)\\.\\w+\\.mean",
-                "result": {
-                  "index": 0,
-                  "text": "$1"
-                }
-              },
-              "type": "regex"
-            }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -85,10 +78,6 @@
               {
                 "color": "red",
                 "value": 80
-              },
-              {
-                "color": "#EAB839",
-                "value": 90
               }
             ]
           }
@@ -101,7 +90,7 @@
         "x": 0,
         "y": 0
       },
-      "id": 6,
+      "id": 1,
       "options": {
         "legend": {
           "calcs": [],
@@ -114,6 +103,7 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "10.2.3",
       "targets": [
         {
           "datasource": {
@@ -134,8 +124,7 @@
               "type": "fill"
             }
           ],
-          "hide": false,
-          "measurement": "/^$battery$/",
+          "measurement": "/^$all_measurements$/",
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "A",
@@ -154,15 +143,27 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "location::tag",
+              "operator": "=",
+              "value": "UPB"
+            }
+          ]
         }
       ],
-      "title": "Battery Grafic",
+      "title": "UPB Iot Data - grafic",
       "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "mode": "outer"
+          }
+        },
         {
           "id": "renameByRegex",
           "options": {
-            "regex": "\\w+\\.(\\w+)\\.\\w+\\.mean",
+            "regex": "\\w+\\.(\\w+\\.\\w+)\\.mean",
             "renamePattern": "$1"
           }
         }
@@ -186,18 +187,7 @@
             },
             "inspect": false
           },
-          "mappings": [
-            {
-              "options": {
-                "pattern": "\\w+\\.(\\w+)\\.\\w+\\.mean",
-                "result": {
-                  "index": 0,
-                  "text": "$1"
-                }
-              },
-              "type": "regex"
-            }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -220,7 +210,7 @@
         "x": 12,
         "y": 0
       },
-      "id": 7,
+      "id": 2,
       "options": {
         "cellHeight": "sm",
         "footer": {
@@ -231,13 +221,7 @@
           ],
           "show": false
         },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": false,
-            "displayName": "Trend #A"
-          }
-        ]
+        "showHeader": true
       },
       "pluginVersion": "10.2.3",
       "targets": [
@@ -249,22 +233,20 @@
           "groupBy": [
             {
               "params": [
-                "$__interval"
+                "1s"
               ],
               "type": "time"
             },
             {
               "params": [
-                "null"
+                "linear"
               ],
               "type": "fill"
             }
           ],
-          "measurement": "/^$battery$/",
+          "measurement": "/^$all_measurements$/",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT mean(\"value\") FROM /^$battery$/ WHERE $timeFilter GROUP BY time($__interval) fill(null)",
-          "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -281,49 +263,28 @@
               }
             ]
           ],
-          "tags": []
+          "tags": [
+            {
+              "key": "location::tag",
+              "operator": "=",
+              "value": "UPB"
+            }
+          ]
         }
       ],
-      "title": "Battery Table",
+      "title": "UPB Iot Data - table",
       "transformations": [
         {
-          "id": "seriesToRows",
-          "options": {}
-        },
-        {
-          "id": "groupBy",
+          "id": "joinByField",
           "options": {
-            "fields": {
-              "Metric": {
-                "aggregations": [],
-                "operation": "groupby"
-              },
-              "Value": {
-                "aggregations": [
-                  "min",
-                  "max",
-                  "mean",
-                  "lastNotNull"
-                ],
-                "operation": "aggregate"
-              }
-            }
+            "mode": "outer"
           }
         },
         {
-          "id": "organize",
+          "id": "renameByRegex",
           "options": {
-            "excludeByName": {},
-            "includeByName": {},
-            "indexByName": {},
-            "renameByName": {
-              "Metric": "",
-              "Value (last)": "Current",
-              "Value (lastNotNull)": "Current",
-              "Value (max)": "Max",
-              "Value (mean)": "Avg",
-              "Value (min)": "Min"
-            }
+            "regex": "\\w+\\.(\\w+\\.\\w+)\\.mean",
+            "renamePattern": "$1"
           }
         }
       ],
@@ -339,23 +300,33 @@
         "current": {
           "selected": true,
           "text": [
-            "All"
+            "UPB.RPi_1.BAT",
+            "UPB.RPi_1.HUMID",
+            "UPB.RPi_1.TMP",
+            "UPB.ZEUS.AQI",
+            "UPB.ZEUS.Alarm",
+            "UPB.ZEUS.RSSI"
           ],
           "value": [
-            "$__all"
+            "UPB.RPi_1.BAT",
+            "UPB.RPi_1.HUMID",
+            "UPB.RPi_1.TMP",
+            "UPB.ZEUS.AQI",
+            "UPB.ZEUS.Alarm",
+            "UPB.ZEUS.RSSI"
           ]
         },
         "datasource": {
           "type": "influxdb",
           "uid": "123456"
         },
-        "definition": "SHOW MEASUREMENTS WITH MEASUREMENT =~ /.*\\..*\\.(BAT).*/",
+        "definition": "SHOW MEASUREMENTS",
         "hide": 0,
         "includeAll": true,
         "multi": true,
-        "name": "battery",
+        "name": "all_measurements",
         "options": [],
-        "query": "SHOW MEASUREMENTS WITH MEASUREMENT =~ /.*\\..*\\.(BAT).*/",
+        "query": "SHOW MEASUREMENTS",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -370,8 +341,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Battery Dashboard",
-  "uid": "b57b31c1-0bcb-44ff-9263-382c8de90116",
-  "version": 6,
+  "title": "UPB Iot Data",
+  "uid": "a4b8d214-9a26-4f71-98da-534dfa52a7be",
+  "version": 1,
   "weekStart": ""
 }
